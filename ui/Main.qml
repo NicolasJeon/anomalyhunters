@@ -29,9 +29,14 @@ Window {
     // 장비 추가 시 QML 측 카운터 (초기 3개는 C++에서 생성됨)
     property int addCount: 4
 
-    // 선택된 장비 / 추론 상태 alias
+    // 자주 쓰는 프로퍼티 alias — repository 직접 접근 반복 제거
     property var selDev: repository.selectedDevice
     property var selInf: repository.selectedInference
+    property var selTS:  repository.selectedTimeSeries
+
+    // 히스토리 바 너비: 우측 패널 - 여백 - 간격 합산 후 20개로 균등 분배
+    readonly property real barWidth:
+        Math.floor((root.width - leftPanel.width - 32 - 19 * 2) / 20)
 
     // ── 메인 레이아웃: 좌(디바이스 목록) + 우(상세) ──────────────────────
     Row {
@@ -246,7 +251,7 @@ Window {
                 visible: repository.selectedDeviceId !== ""
 
                 // ── 헤더 (이름 + 타입 + Start/Stop) ──────────────────────
-                Row {
+                RowLayout {
                     width: parent.width
                     spacing: 10
 
@@ -265,12 +270,11 @@ Window {
                         }
                     }
 
-                    Item { width: 1 }
+                    Item { Layout.fillWidth: true }
 
                     // Start / Stop 버튼 (상세 패널)
                     Rectangle {
                         width: 80; height: 30; radius: 4
-                        anchors.verticalCenter: parent.verticalCenter
                         color: root.selDev["controlStatus"] === "running"
                                ? "#5a1a1a" : "#1a4a1a"
 
@@ -333,21 +337,15 @@ Window {
                         Text { text: "P(Abnormal)";  color: "#7777aa"; font.pixelSize: 12 }
 
                         Text {
-                            text: {
-                                var ts = repository.selectedTimeSeries
-                                return ts.length > 0
-                                    ? ts[ts.length-1]["temperature"].toFixed(1) + " °C"
-                                    : "—"
-                            }
+                            text: root.selTS.length > 0
+                                ? root.selTS[root.selTS.length-1]["temperature"].toFixed(1) + " °C"
+                                : "—"
                             color: "#66ffaa"; font.pixelSize: 16; font.bold: true
                         }
                         Text {
-                            text: {
-                                var ts = repository.selectedTimeSeries
-                                return ts.length > 0
-                                    ? ts[ts.length-1]["power"].toFixed(1) + " W"
-                                    : "—"
-                            }
+                            text: root.selTS.length > 0
+                                ? root.selTS[root.selTS.length-1]["power"].toFixed(1) + " W"
+                                : "—"
                             color: "#66aaff"; font.pixelSize: 16; font.bold: true
                         }
                         Text {
@@ -394,21 +392,20 @@ Window {
                     spacing: 6
 
                     Text {
-                        text: "History  (" + repository.selectedTimeSeries.length + " samples)"
+                        text: "History  (" + root.selTS.length + " samples)"
                         color: "#7777aa"; font.pixelSize: 11
                     }
 
-                    // Temperature bars
+                    // Temperature bars  (정상: 녹, 이상: 적, 버퍼: 회)
                     Text { text: "Temperature  28 – 70 °C"; color: "#555577"; font.pixelSize: 10 }
                     Row {
                         spacing: 2
                         Repeater {
-                            model: repository.selectedTimeSeries
+                            model: root.selTS
                             delegate: Rectangle {
                                 required property var modelData
-                                property real t: modelData["temperature"] ?? 28
-                                width:  Math.floor((840 - 220 - 32) / 20) - 2
-                                height: Math.max(2, ((t - 28) / 42) * 50)
+                                width:  root.barWidth
+                                height: Math.max(2, ((modelData["temperature"] - 28) / 42) * 50)
                                 anchors.bottom: parent ? parent.bottom : undefined
                                 radius: 2
                                 color:  modelData["label"] === 0 ? "#1a9a5a"
@@ -423,12 +420,11 @@ Window {
                     Row {
                         spacing: 2
                         Repeater {
-                            model: repository.selectedTimeSeries
+                            model: root.selTS
                             delegate: Rectangle {
                                 required property var modelData
-                                property real pw: modelData["power"] ?? 40
-                                width:  Math.floor((840 - 220 - 32) / 20) - 2
-                                height: Math.max(2, ((pw - 40) / 90) * 50)
+                                width:  root.barWidth
+                                height: Math.max(2, ((modelData["power"] - 40) / 90) * 50)
                                 anchors.bottom: parent ? parent.bottom : undefined
                                 radius: 2
                                 color:  modelData["label"] === 0 ? "#2255cc"
@@ -450,7 +446,7 @@ Window {
                         width: parent.width
                         height: 104
                         clip: true
-                        model: repository.selectedTimeSeries
+                        model: root.selTS
                         verticalLayoutDirection: ListView.BottomToTop
 
                         delegate: Rectangle {

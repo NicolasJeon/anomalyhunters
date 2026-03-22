@@ -46,7 +46,6 @@ void DeviceRepository::tick()
         // 추론
         auto res = e->detector->push(s.temperature, s.power);
 
-        int oldLabel = e->inference.label;
         e->inference.label        = res.label;
         e->inference.probNormal   = res.prob_normal;
         e->inference.probAbnormal = res.prob_abnormal;
@@ -65,10 +64,6 @@ void DeviceRepository::tick()
         if (e->series.size() >= SERIES_BUFFER)
             e->series.removeFirst();
         e->series.append(ts);
-
-        // label 변화 시 목록 갱신
-        if (e->inference.label != oldLabel)
-            emit devicesChanged();
 
         if (id == selectedDeviceId_)
             selectedRunning = true;

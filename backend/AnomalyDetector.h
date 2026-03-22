@@ -3,10 +3,6 @@
 #include <array>
 #include <deque>
 #include <string>
-#include <vector>
-
-// Forward-declare ORT types to keep the header light
-namespace Ort { class Session; class Env; class SessionOptions; }
 
 class AnomalyDetector
 {

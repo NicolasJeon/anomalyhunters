@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QString>
 #include <QVariantMap>
+#include <QString>
 
 // ── TimeSeriesSample ─────────────────────────────────────────────────────────
 struct TimeSeriesSample {

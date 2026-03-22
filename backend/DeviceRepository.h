@@ -1,12 +1,12 @@
 #pragma once
 
+#include <QHash>
 #include <QObject>
+#include <QStringList>
 #include <QTimer>
 #include <QVariantList>
 #include <QVariantMap>
 #include <QVector>
-#include <QHash>
-#include <QStringList>
 #include "Device.h"
 #include "AnomalyDetector.h"
 #include "DeviceTimeSeriesSimulator.h"
