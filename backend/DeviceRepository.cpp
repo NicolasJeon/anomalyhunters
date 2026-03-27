@@ -206,7 +206,9 @@ void DeviceRepository::updateDevice(QString deviceId, QString name,
 void DeviceRepository::startDevice(QString deviceId)
 {
     DeviceEntry* e = entryFor(deviceId);
-    if (!e || e->device.controlStatus == "running") return;
+    // emergency 상태에서는 직접 시작 불가 — resetDevice 후 start 해야 함
+    if (!e || e->device.controlStatus == "running"
+           || e->device.controlStatus == "emergency") return;
 
     e->device.controlStatus = "running";
     emit devicesChanged();
@@ -223,6 +225,35 @@ void DeviceRepository::stopDevice(QString deviceId)
     emit devicesChanged();
     if (deviceId == selectedDeviceId_)
         emit selectedDeviceChanged();
+}
+
+void DeviceRepository::emergencyStop(QString deviceId)
+{
+    DeviceEntry* e = entryFor(deviceId);
+    if (!e || e->device.controlStatus != "running") return;
+
+    e->device.controlStatus = "emergency";
+    e->device.healthStatus  = "emergency";
+    emit devicesChanged();
+    if (deviceId == selectedDeviceId_) {
+        emit selectedDeviceChanged();
+        emit selectedInferenceChanged();
+    }
+}
+
+void DeviceRepository::resetDevice(QString deviceId)
+{
+    DeviceEntry* e = entryFor(deviceId);
+    if (!e || e->device.controlStatus != "emergency") return;
+
+    e->device.controlStatus = "stopped";
+    e->device.healthStatus  = "normal";
+    e->inference            = InferenceState{};   // 추론 상태 초기화
+    emit devicesChanged();
+    if (deviceId == selectedDeviceId_) {
+        emit selectedDeviceChanged();
+        emit selectedInferenceChanged();
+    }
 }
 
 void DeviceRepository::startSimulation() { timer_.start(500); }

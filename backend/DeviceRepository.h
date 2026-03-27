@@ -57,6 +57,8 @@ public:
     // ── Control ────────────────────────────────────────────────────────────
     Q_INVOKABLE void startDevice(QString deviceId);
     Q_INVOKABLE void stopDevice(QString deviceId);
+    Q_INVOKABLE void emergencyStop(QString deviceId);   // running → emergency
+    Q_INVOKABLE void resetDevice(QString deviceId);     // emergency → stopped
     Q_INVOKABLE void startSimulation();
     Q_INVOKABLE void stopSimulation();
 

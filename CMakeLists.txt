@@ -5,7 +5,7 @@ project(QtFacility VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick)
+find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2 QuickDialogs2)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -33,6 +33,16 @@ qt_add_qml_module(appQtFacility
     VERSION 1.0
     QML_FILES
         ui/Main.qml
+        ui/components/AddDeviceDialog.qml
+        ui/layout/DetailPanel.qml
+        ui/components/DeviceHeader.qml
+        ui/components/DeviceListItem.qml
+        ui/components/HistoryChart.qml
+        ui/components/ImageCard.qml
+        ui/components/InferenceCard.qml
+        ui/components/LogList.qml
+        ui/layout/MasterPanel.qml
+        ui/components/SensorCard.qml
 )
 
 # ── ONNX 모델을 Qt 리소스로 embed ─────────────────────────────────────────
@@ -56,6 +66,8 @@ target_include_directories(appQtFacility PRIVATE
 
 target_link_libraries(appQtFacility
     PRIVATE Qt6::Quick
+    PRIVATE Qt6::QuickControls2
+    PRIVATE Qt6::QuickDialogs2
     PRIVATE ${ORT_LIB}
 )
 
