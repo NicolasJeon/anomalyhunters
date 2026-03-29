@@ -59,6 +59,9 @@ public:
     Q_INVOKABLE void stopDevice(QString deviceId);
     Q_INVOKABLE void emergencyStop(QString deviceId);   // running → emergency
     Q_INVOKABLE void resetDevice(QString deviceId);     // emergency → stopped
+    Q_INVOKABLE void startAll();
+    Q_INVOKABLE void stopAll();
+    Q_INVOKABLE void emergencyStopAll();
     Q_INVOKABLE void startSimulation();
     Q_INVOKABLE void stopSimulation();
 

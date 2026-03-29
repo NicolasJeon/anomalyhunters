@@ -256,6 +256,21 @@ void DeviceRepository::resetDevice(QString deviceId)
     }
 }
 
+void DeviceRepository::startAll()
+{
+    for (const QString& id : deviceOrder_) startDevice(id);
+}
+
+void DeviceRepository::stopAll()
+{
+    for (const QString& id : deviceOrder_) stopDevice(id);
+}
+
+void DeviceRepository::emergencyStopAll()
+{
+    for (const QString& id : deviceOrder_) emergencyStop(id);
+}
+
 void DeviceRepository::startSimulation() { timer_.start(500); }
 void DeviceRepository::stopSimulation()  { timer_.stop(); }
 

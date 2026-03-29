@@ -16,6 +16,9 @@ Rectangle {
     signal resetRequested(string id)
     signal deleteRequested(string id)
     signal addRequested()
+    signal startAllRequested()
+    signal stopAllRequested()
+    signal emergencyAllRequested()
 
     color: "#0e1020"
 
@@ -69,6 +72,80 @@ Rectangle {
                 onEmergencyRequested: root.emergencyRequested(modelData["id"])
                 onResetRequested:     root.resetRequested(modelData["id"])
                 onDeleteRequested:    root.deleteRequested(modelData["id"])
+            }
+        }
+
+        // ── 하단 전체 제어 버튼 ────────────────────────────────────────────
+        Rectangle {
+            Layout.fillWidth: true
+            implicitHeight: 44
+            color: "#0e1020"
+
+            Rectangle {
+                anchors { top: parent.top; left: parent.left; right: parent.right }
+                height: 1; color: "#2a2c4e"
+            }
+
+            Row {
+                anchors { fill: parent; margins: 6 }
+                spacing: 6
+
+                // All Start
+                Rectangle {
+                    width: (parent.width - 12) / 3
+                    height: parent.height
+                    radius: 4
+                    color: allStartMouse.containsMouse ? "#1a4a1a" : "#122012"
+                    border.color: allStartMouse.containsMouse ? "#44bb44" : "#2a5a2a"
+                    Text {
+                        anchors.centerIn: parent
+                        text: "▶ All"
+                        color: "#66dd66"; font.pixelSize: 12; font.bold: true
+                    }
+                    MouseArea {
+                        id: allStartMouse
+                        anchors.fill: parent; hoverEnabled: true
+                        onClicked: root.startAllRequested()
+                    }
+                }
+
+                // All Stop
+                Rectangle {
+                    width: (parent.width - 12) / 3
+                    height: parent.height
+                    radius: 4
+                    color: "#4a1a1a"
+                    Text {
+                        anchors.centerIn: parent
+                        text: "⏹ All"
+                        color: "#ff6666"; font.pixelSize: 12; font.bold: true
+                    }
+                    MouseArea {
+                        id: allStopMouse
+                        anchors.fill: parent; hoverEnabled: true
+                        onClicked: root.stopAllRequested()
+                    }
+                }
+
+                // All E-Stop
+                Rectangle {
+                    width: (parent.width - 12) / 3
+                    height: parent.height
+                    radius: 4
+                    color: allEstopMouse.containsMouse ? "#3a1a00" : "#101010"
+                    border.color: allEstopMouse.containsMouse ? "#ff6600" : "#3a3a4a"
+                    Text {
+                        anchors.centerIn: parent
+                        text: "E-Stop All"
+                        color: allEstopMouse.containsMouse ? "#ff8833" : "#888899"
+                        font.pixelSize: 12; font.bold: true
+                    }
+                    MouseArea {
+                        id: allEstopMouse
+                        anchors.fill: parent; hoverEnabled: true
+                        onClicked: root.emergencyAllRequested()
+                    }
+                }
             }
         }
     }

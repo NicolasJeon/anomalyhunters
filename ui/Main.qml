@@ -62,7 +62,10 @@ Window {
             onEmergencyRequested: (id) => repository.emergencyStop(id)
             onResetRequested:     (id) => repository.resetDevice(id)
             onDeleteRequested:    (id) => repository.removeDevice(id)
-            onAddRequested:       addDialog.open()
+            onAddRequested:           addDialog.open()
+            onStartAllRequested:      repository.startAll()
+            onStopAllRequested:       repository.stopAll()
+            onEmergencyAllRequested:  repository.emergencyStopAll()
         }
 
         DetailPanel {

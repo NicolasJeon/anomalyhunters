@@ -32,7 +32,7 @@ ColumnLayout {
                     width: parent.width
                     height: Math.max(2, ((tempBar.modelData["temperature"] - 28) / 42) * 50)
                     radius: 2
-                    color: tempBar.modelData["label"] === 0 ? "#1a9a5a"
+                    color: tempBar.modelData["label"] === 0 ? "#1a8899"
                          : tempBar.modelData["label"] === 1 ? "#c87941"
                          : tempBar.modelData["label"] === 2 ? "#cc3344"
                          : "#444466"

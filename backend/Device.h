@@ -31,7 +31,7 @@ struct InferenceState {
     float   probAbnormal = 0.f;
 
     QString statusText() const {
-        if (label == -1) return QStringLiteral("Buffering...");
+        if (label == -1) return QStringLiteral("Collecting data...");
         if (label ==  0) return QStringLiteral("Normal");
         if (label ==  1) return QStringLiteral("Warning");
         return QStringLiteral("ABNORMAL");
