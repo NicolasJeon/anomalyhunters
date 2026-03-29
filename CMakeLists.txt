@@ -34,6 +34,7 @@ qt_add_qml_module(appQtFacility
     QML_FILES
         ui/Main.qml
         ui/components/AddDeviceDialog.qml
+        ui/components/EditDeviceDialog.qml
         ui/layout/DetailPanel.qml
         ui/components/DeviceHeader.qml
         ui/components/DeviceListItem.qml
@@ -43,6 +44,12 @@ qt_add_qml_module(appQtFacility
         ui/components/LogList.qml
         ui/layout/MasterPanel.qml
         ui/components/SensorCard.qml
+        ui/components/StatusCard.qml
+    RESOURCES
+        images/air_circulator.png
+        images/temp_controller.png
+        images/pump.png
+        images/generator.png
 )
 
 # ── ONNX 모델을 Qt 리소스로 embed ─────────────────────────────────────────
@@ -51,6 +58,7 @@ qt_add_resources(appQtFacility "models"
     FILES
         equipment_anomaly_rf.onnx
 )
+
 
 set_target_properties(appQtFacility PROPERTIES
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}

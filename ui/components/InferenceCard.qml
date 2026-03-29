@@ -18,6 +18,7 @@ Rectangle {
         if (root.controlStatus === "emergency") return "#5a0000"
         if (root.label === -1) return "#444466"
         if (root.label ===  0) return "#1a7a4a"
+        if (root.label ===  1) return "#7a5000"
         return "#9b2335"
     }
 

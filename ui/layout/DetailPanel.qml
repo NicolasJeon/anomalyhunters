@@ -15,6 +15,7 @@ Rectangle {
     signal stopRequested()
     signal emergencyRequested()
     signal resetRequested()
+    signal editRequested()
 
     color: "#12141f"
 
@@ -43,39 +44,35 @@ Rectangle {
             onStopRequested:      root.stopRequested()
             onEmergencyRequested: root.emergencyRequested()
             onResetRequested:     root.resetRequested()
+            onEditRequested:      root.editRequested() // qmllint disable unqualified
         }
 
-        // ② 미들 로우: [이미지] [추론 카드] [센서 카드]
+        // ② 미들 로우: [이미지 2] [통합 상태 카드 3]
         RowLayout {
+            id: midRow
             Layout.fillWidth: true
-            Layout.preferredHeight: 130
+            Layout.preferredHeight: 140
             spacing: 10
 
             ImageCard {
-                Layout.fillWidth: true
+                Layout.preferredWidth: (midRow.width - midRow.spacing) * 2 / 5
                 Layout.fillHeight: true
                 imageSource: root.selDev["imageSource"] ?? ""
                 deviceType:  root.selDev["type"]        ?? ""
             }
 
-            InferenceCard {
+            StatusCard {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                controlStatus: root.selDev["controlStatus"] ?? "stopped"
-                label:         root.selInf["label"]         ?? -1
-                statusText:    root.selInf["statusText"]    ?? "—"
-                probAbnormal:  root.selInf["probAbnormal"]  ?? 0
-            }
-
-            SensorCard {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                hasData:      root.selTS.length > 0
-                temperature:  root.selTS.length > 0 ? root.selTS[root.selTS.length-1]["temperature"] : 0
-                power:        root.selTS.length > 0 ? root.selTS[root.selTS.length-1]["power"]       : 0
-                label:        root.selInf["label"]        ?? -1
-                probNormal:   root.selInf["probNormal"]   ?? 0
-                probAbnormal: root.selInf["probAbnormal"] ?? 0
+                controlStatus: root.selDev["controlStatus"]          ?? "stopped"
+                label:         root.selInf["label"]                  ?? -1
+                statusText:    root.selInf["statusText"]             ?? "—"
+                probNormal:    root.selInf["probNormal"]             ?? 0
+                probWarning:   root.selInf["probWarning"]            ?? 0
+                probAbnormal:  root.selInf["probAbnormal"]           ?? 0
+                hasData:       root.selTS.length > 0
+                temperature:   root.selTS.length > 0 ? root.selTS[root.selTS.length-1]["temperature"] : 0
+                power:         root.selTS.length > 0 ? root.selTS[root.selTS.length-1]["power"]       : 0
             }
         }
 

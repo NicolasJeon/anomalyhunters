@@ -10,10 +10,11 @@ public:
     static constexpr int SEQ_LEN      = 10;
     static constexpr int FEATURE_SIZE = 11;
 
-    // label: 0 = normal, 1 = abnormal, -1 = buffer not full yet
+    // label: 0 = normal, 1 = warning, 2 = abnormal, -1 = buffer not full yet
     struct Result {
-        int   label       = -1;
-        float prob_normal = 0.0f;
+        int   label         = -1;
+        float prob_normal   = 0.0f;
+        float prob_warning  = 0.0f;
         float prob_abnormal = 0.0f;
     };
 

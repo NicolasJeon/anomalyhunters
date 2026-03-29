@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 
-// 히스토리 바 차트 — Temperature / Power (정상: 녹, 이상: 적, 버퍼: 회)
+// 히스토리 바 차트 — Temperature / Power (정상: 녹, 경고: 주황, 이상: 적, 버퍼: 회)
 ColumnLayout {
     id: root
 
@@ -22,6 +22,7 @@ ColumnLayout {
         Repeater {
             model: root.timeSeries
             delegate: Item {
+                id: tempBar
                 required property var modelData
                 Layout.fillWidth: true
                 implicitHeight: 50
@@ -29,10 +30,11 @@ ColumnLayout {
                 Rectangle {
                     anchors.bottom: parent.bottom
                     width: parent.width
-                    height: Math.max(2, ((modelData["temperature"] - 28) / 42) * 50)
+                    height: Math.max(2, ((tempBar.modelData["temperature"] - 28) / 42) * 50)
                     radius: 2
-                    color: modelData["label"] === 0 ? "#1a9a5a"
-                         : modelData["label"] === 1 ? "#cc3344"
+                    color: tempBar.modelData["label"] === 0 ? "#1a9a5a"
+                         : tempBar.modelData["label"] === 1 ? "#c87941"
+                         : tempBar.modelData["label"] === 2 ? "#cc3344"
                          : "#444466"
                 }
             }
@@ -47,6 +49,7 @@ ColumnLayout {
         Repeater {
             model: root.timeSeries
             delegate: Item {
+                id: powerBar
                 required property var modelData
                 Layout.fillWidth: true
                 implicitHeight: 50
@@ -54,10 +57,11 @@ ColumnLayout {
                 Rectangle {
                     anchors.bottom: parent.bottom
                     width: parent.width
-                    height: Math.max(2, ((modelData["power"] - 40) / 90) * 50)
+                    height: Math.max(2, ((powerBar.modelData["power"] - 40) / 90) * 50)
                     radius: 2
-                    color: modelData["label"] === 0 ? "#2255cc"
-                         : modelData["label"] === 1 ? "#cc3344"
+                    color: powerBar.modelData["label"] === 0 ? "#2255cc"
+                         : powerBar.modelData["label"] === 1 ? "#c87941"
+                         : powerBar.modelData["label"] === 2 ? "#cc3344"
                          : "#444466"
                 }
             }

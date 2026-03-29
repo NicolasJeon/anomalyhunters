@@ -24,6 +24,14 @@ Window {
         onDeviceAdded: (name, type, img) => repository.addDevice(name, type, img)
     }
 
+    // ── 장비 수정 다이얼로그 ──────────────────────────────────────────────
+    EditDeviceDialog {
+        id: editDialog
+        anchors.fill: parent
+        z: 100
+        onDeviceUpdated: (id, name, type, img) => repository.updateDevice(id, name, type, img)
+    }
+
     // ── 메인 레이아웃 (SplitView) ─────────────────────────────────────────
     SplitView {
         anchors.fill: parent
@@ -67,6 +75,11 @@ Window {
             onStopRequested:      repository.stopDevice(repository.selectedDeviceId)
             onEmergencyRequested: repository.emergencyStop(repository.selectedDeviceId)
             onResetRequested:     repository.resetDevice(repository.selectedDeviceId)
+            onEditRequested: {
+                var d = repository.selectedDevice
+                editDialog.open(repository.selectedDeviceId,  // qmllint disable missing-property
+                                d["name"] ?? "", d["type"] ?? "", d["imageSource"] ?? "")
+            }
         }
     }
 }

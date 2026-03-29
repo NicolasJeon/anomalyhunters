@@ -27,11 +27,13 @@ struct TimeSeriesSample {
 struct InferenceState {
     int     label        = -1;
     float   probNormal   = 0.f;
+    float   probWarning  = 0.f;
     float   probAbnormal = 0.f;
 
     QString statusText() const {
         if (label == -1) return QStringLiteral("Buffering...");
         if (label ==  0) return QStringLiteral("Normal");
+        if (label ==  1) return QStringLiteral("Warning");
         return QStringLiteral("ABNORMAL");
     }
 
@@ -39,6 +41,7 @@ struct InferenceState {
         return {
             { "label",        label        },
             { "probNormal",   probNormal   },
+            { "probWarning",  probWarning  },
             { "probAbnormal", probAbnormal },
             { "statusText",   statusText() }
         };

@@ -67,19 +67,17 @@ AnomalyDetector::Result AnomalyDetector::push(float temperature, float power)
         inputNames,  &inputTensor, 1,
         outputNames, 2);
 
-    // output[0]: label (int64)
+    // output[0]: label (int64)  — 0=normal, 1=warning, 2=abnormal
     int64_t label = outputs[0].GetTensorData<int64_t>()[0];
 
-    // output[1]: probabilities tensor (1, 2)  — zipmap=False で export
-    //            [0] = P(normal), [1] = P(abnormal)
+    // output[1]: probabilities tensor (1, 3)  — [P(normal), P(warning), P(abnormal)]
     const float* probData = outputs[1].GetTensorData<float>();
-    float p0 = probData[0];
-    float p1 = probData[1];
 
     Result res;
     res.label         = static_cast<int>(label);
-    res.prob_normal   = p0;
-    res.prob_abnormal = p1;
+    res.prob_normal   = probData[0];
+    res.prob_warning  = probData[1];
+    res.prob_abnormal = probData[2];
     return res;
 }
 

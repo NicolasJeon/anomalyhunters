@@ -14,12 +14,14 @@ DeviceRepository::DeviceRepository(const QString& modelPath, QObject* parent)
     , modelPath_(modelPath)
 {
     connect(&timer_, &QTimer::timeout, this, &DeviceRepository::tick);
-    timer_.start(500);
+    timer_.start(1000);
 
-    // 초기 샘플 장비 3개
-    addDevice("Compressor A", "Compressor");
-    addDevice("Pump B",       "Pump");
-    addDevice("Motor C",      "Motor");
+    // 초기 장비 5개
+    addDevice("공기순환기", "Air Circulator",         "qrc:/qt/qml/QtFacility/images/air_circulator.png");
+    addDevice("온도조절기", "Temperature Controller", "qrc:/qt/qml/QtFacility/images/temp_controller.png");
+    addDevice("펌프 A",     "Pump",                   "qrc:/qt/qml/QtFacility/images/pump.png");
+    addDevice("펌프 B",     "Pump",                   "qrc:/qt/qml/QtFacility/images/pump.png");
+    addDevice("발전기",     "Generator",              "qrc:/qt/qml/QtFacility/images/generator.png");
 
     // 첫 번째 장비를 자동 시작 + 선택
     if (!deviceOrder_.isEmpty()) {
@@ -48,6 +50,7 @@ void DeviceRepository::tick()
 
         e->inference.label        = res.label;
         e->inference.probNormal   = res.prob_normal;
+        e->inference.probWarning  = res.prob_warning;
         e->inference.probAbnormal = res.prob_abnormal;
 
         // healthStatus 갱신
@@ -58,7 +61,7 @@ void DeviceRepository::tick()
         ts.timestampMs  = QDateTime::currentMSecsSinceEpoch();
         ts.temperature  = s.temperature;
         ts.power        = s.power;
-        ts.label        = res.label;
+        ts.label        = e->inference.label;
         ts.probAbnormal = res.prob_abnormal;
 
         if (e->series.size() >= SERIES_BUFFER)
@@ -82,12 +85,9 @@ void DeviceRepository::tick()
 // ── healthStatus 규칙 ─────────────────────────────────────────────────────────
 void DeviceRepository::updateHealthStatus(Device& dev, const InferenceState& inf)
 {
-    if (inf.label == -1 || inf.probAbnormal < 0.4f)
-        dev.healthStatus = "normal";
-    else if (inf.probAbnormal < 0.7f)
-        dev.healthStatus = "warning";
-    else
-        dev.healthStatus = "anomaly";
+    if (inf.label <= 0)      dev.healthStatus = "normal";
+    else if (inf.label == 1) dev.healthStatus = "warning";
+    else                     dev.healthStatus = "anomaly";
 }
 
 // ── Property accessors ────────────────────────────────────────────────────────

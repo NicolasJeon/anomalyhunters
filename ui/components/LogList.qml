@@ -32,12 +32,14 @@ ColumnLayout {
                 font.pixelSize: 10
                 font.family: "Courier New"
                 color: parent.modelData["label"] === 0 ? "#55ee88"
-                     : parent.modelData["label"] === 1 ? "#ff6666"
+                     : parent.modelData["label"] === 1 ? "#e8a030"
+                     : parent.modelData["label"] === 2 ? "#ff6666"
                      : "#666688"
                 text: {
                     var d   = parent.modelData
                     var lbl = d["label"] === -1 ? "buf"
                             : d["label"] === 0  ? "OK "
+                            : d["label"] === 1  ? "WRN"
                             : "ERR"
                     var pa  = d["label"] === -1 ? "  —  "
                             : ((d["probAbnormal"] ?? 0) * 100).toFixed(1) + "%"

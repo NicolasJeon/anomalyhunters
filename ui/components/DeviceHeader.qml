@@ -14,6 +14,7 @@ RowLayout {
     signal stopRequested()
     signal emergencyRequested()
     signal resetRequested()
+    signal editRequested()
 
     spacing: 10
 
@@ -30,6 +31,15 @@ RowLayout {
     }
 
     Item { Layout.fillWidth: true }
+
+    // ── 편집 버튼 ────────────────────────────────────────────────────────
+    Rectangle {
+        implicitWidth: 64; implicitHeight: 30; radius: 4
+        color: editMouse.containsMouse ? "#253050" : "#1a2035"
+        border.color: editMouse.containsMouse ? "#5599ff" : "#2a3a5a"; border.width: 1
+        Text { anchors.centerIn: parent; text: "✎  Edit"; color: editMouse.containsMouse ? "#88aaff" : "#6688bb"; font.pixelSize: 11 }
+        MouseArea { id: editMouse; anchors.fill: parent; hoverEnabled: true; onClicked: root.editRequested() }
+    }
 
     // ── stopped → [▶ Start] ──────────────────────────────────────────────
     Rectangle {
