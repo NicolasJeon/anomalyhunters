@@ -9,10 +9,22 @@ find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2 QuickDialogs2)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
-# ── ONNX Runtime (Homebrew) ────────────────────────────────────────────────
-set(ORT_ROOT /opt/homebrew/Cellar/onnxruntime/1.24.4)
-set(ORT_INCLUDE ${ORT_ROOT}/include)
-set(ORT_LIB     ${ORT_ROOT}/lib/libonnxruntime.dylib)
+# ── ONNX Runtime (플랫폼별) ───────────────────────────────────────────────
+if(WIN32)
+    set(ORT_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/third_party/onnxruntime-win-x64-1.24.4)
+    set(ORT_INCLUDE ${ORT_ROOT}/include)
+    set(ORT_LIB     ${ORT_ROOT}/lib/onnxruntime.lib)
+elseif(APPLE)
+    # macOS (Apple Silicon)
+    set(ORT_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/third_party/onnxruntime-osx-arm64-1.24.4)
+    set(ORT_INCLUDE ${ORT_ROOT}/include)
+    set(ORT_LIB     ${ORT_ROOT}/lib/libonnxruntime.dylib)
+else()
+    # Linux
+    set(ORT_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/third_party/onnxruntime-linux-x64-1.24.4)
+    set(ORT_INCLUDE ${ORT_ROOT}/include)
+    set(ORT_LIB     ${ORT_ROOT}/lib/libonnxruntime.so)
+endif()
 
 # ── 실행 파일 ──────────────────────────────────────────────────────────────
 qt_add_executable(appQtFacility

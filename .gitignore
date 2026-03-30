@@ -1,3 +1,6 @@
 build/
 CMakeLists.txt.user
 onnx/equipment_anomaly_rf.onnx
+
+# onnxruntime 바이너리 (scripts/fetch_onnxruntime.sh 로 다운로드)
+third_party/
