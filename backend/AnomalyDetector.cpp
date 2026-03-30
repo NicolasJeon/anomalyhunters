@@ -6,6 +6,10 @@
 #include <cmath>
 #include <numeric>
 #include <stdexcept>
+#ifdef _WIN32
+#  include <locale>
+#  include <codecvt>
+#endif
 
 // ── ORT 내부 객체 묶음 ────────────────────────────────────────────────────
 struct AnomalyDetector::OrtImpl {
@@ -14,8 +18,19 @@ struct AnomalyDetector::OrtImpl {
     Ort::Session        session;
 
     explicit OrtImpl(const std::string& modelPath)
+#ifdef _WIN32
+        : session(env, toOrtPath(modelPath).c_str(), opts)
+#else
         : session(env, modelPath.c_str(), opts)
+#endif
     {}
+
+#ifdef _WIN32
+    static std::wstring toOrtPath(const std::string& path) {
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
+        return conv.from_bytes(path);
+    }
+#endif
 };
 
 // ── 생성자 / 소멸자 ───────────────────────────────────────────────────────

@@ -91,6 +91,16 @@ target_link_libraries(appQtFacility
     PRIVATE ${ORT_LIB}
 )
 
+# ── Windows: copy ORT DLLs next to the executable ─────────────────────────
+if(WIN32)
+    add_custom_command(TARGET appQtFacility POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${ORT_ROOT}/lib/onnxruntime.dll"
+            "${ORT_ROOT}/lib/onnxruntime_providers_shared.dll"
+            $<TARGET_FILE_DIR:appQtFacility>
+    )
+endif()
+
 include(GNUInstallDirs)
 install(TARGETS appQtFacility
     BUNDLE DESTINATION .
