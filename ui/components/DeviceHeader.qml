@@ -9,7 +9,6 @@ RowLayout {
     property string name:          ""
     property string type:          ""
     property string controlStatus: "stopped"
-
     signal startRequested()
     signal stopRequested()
     signal emergencyRequested()

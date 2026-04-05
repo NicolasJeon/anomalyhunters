@@ -25,6 +25,9 @@ public:
     // Returns Result with label == -1 until SEQ_LEN samples are collected.
     Result push(float temperature, float power);
 
+    // 버퍼 초기화 — Test with Data 실행 전에 호출
+    void reset();
+
 private:
     std::array<float, FEATURE_SIZE> extractFeatures() const;
 

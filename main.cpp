@@ -5,6 +5,7 @@
 #include <QStandardPaths>
 
 #include "backend/DeviceRepository.h"
+#include "backend/DatabaseManager.h"
 
 // Qt 리소스에 embed된 ONNX 모델을 임시 경로로 추출
 static QString extractModelToTemp()
@@ -22,6 +23,8 @@ static QString extractModelToTemp()
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+
+    DatabaseManager::instance().init();
 
     const QString modelPath = extractModelToTemp();
     DeviceRepository repository(modelPath);

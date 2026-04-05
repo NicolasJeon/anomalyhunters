@@ -53,8 +53,20 @@ void DeviceRepository::tick()
         e->inference.probWarning  = res.prob_warning;
         e->inference.probAbnormal = res.prob_abnormal;
 
-        // healthStatus 갱신
+        // healthStatus 갱신 + 상태 변화 감지 → DB 기록
+        const QString prevHealth = e->prevHealthStatus;
         updateHealthStatus(e->device, e->inference);
+        if (e->recording && e->device.healthStatus != prevHealth) {
+            const float lastTemp  = e->series.isEmpty() ? 0.f : e->series.last().temperature;
+            const float lastPower = e->series.isEmpty() ? 0.f : e->series.last().power;
+            DatabaseManager::instance().insertStateEvent(
+                e->device.id, e->device.name,
+                e->device.healthStatus, e->device.controlStatus,
+                lastTemp, lastPower,
+                e->inference.label,
+                e->inference.probNormal, e->inference.probWarning, e->inference.probAbnormal);
+        }
+        e->prevHealthStatus = e->device.healthStatus;
 
         // 시계열 추가
         TimeSeriesSample ts;
@@ -273,6 +285,90 @@ void DeviceRepository::emergencyStopAll()
 
 void DeviceRepository::startSimulation() { timer_.start(500); }
 void DeviceRepository::stopSimulation()  { timer_.stop(); }
+
+// ── 내부 헬퍼 ─────────────────────────────────────────────────────────────────
+// ── Recording ─────────────────────────────────────────────────────────────────
+bool DeviceRepository::selectedDeviceRecording() const
+{
+    const DeviceEntry* e = entryFor(selectedDeviceId_);
+    return e ? e->recording : false;
+}
+
+void DeviceRepository::toggleRecording(QString deviceId)
+{
+    DeviceEntry* e = entryFor(deviceId);
+    if (!e) return;
+
+    e->recording = !e->recording;
+
+    if (deviceId == selectedDeviceId_)
+        emit selectedDeviceChanged();
+}
+
+// ── clearDeviceDisplay ────────────────────────────────────────────────────────
+void DeviceRepository::clearDeviceDisplay(QString deviceId)
+{
+    DeviceEntry* e = entryFor(deviceId);
+    if (!e) return;
+
+    e->detector->reset();
+    e->series.clear();
+    e->inference = InferenceState{};
+    updateHealthStatus(e->device, e->inference);
+
+    emit devicesChanged();
+    if (deviceId == selectedDeviceId_) {
+        emit selectedDeviceChanged();
+        emit selectedTimeSeriesChanged();
+        emit selectedInferenceChanged();
+    }
+}
+
+// ── Test with Data ────────────────────────────────────────────────────────────
+void DeviceRepository::runTestSeries(QString deviceId, QVariantList series)
+{
+    DeviceEntry* e = entryFor(deviceId);
+    if (!e || e->device.controlStatus != "stopped" || series.isEmpty()) return;
+
+    // 버퍼 초기화
+    e->detector->reset();
+    e->series.clear();
+    e->inference = InferenceState{};
+
+    AnomalyDetector::Result lastResult;
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    const int    n   = series.size();
+
+    for (int i = 0; i < n; ++i) {
+        const QVariantMap row  = series[i].toMap();
+        const float temp  = row.value("temperature").toFloat();
+        const float power = row.value("power").toFloat();
+
+        lastResult = e->detector->push(temp, power);
+
+        TimeSeriesSample ts;
+        ts.timestampMs  = now - static_cast<qint64>(n - 1 - i) * 1000;
+        ts.temperature  = temp;
+        ts.power        = power;
+        ts.label        = lastResult.label;
+        ts.probAbnormal = lastResult.prob_abnormal;
+        e->series.append(ts);
+    }
+
+    e->inference.label        = lastResult.label;
+    e->inference.probNormal   = lastResult.prob_normal;
+    e->inference.probWarning  = lastResult.prob_warning;
+    e->inference.probAbnormal = lastResult.prob_abnormal;
+
+    updateHealthStatus(e->device, e->inference);
+
+    emit devicesChanged();
+    if (deviceId == selectedDeviceId_) {
+        emit selectedDeviceChanged();
+        emit selectedTimeSeriesChanged();
+        emit selectedInferenceChanged();
+    }
+}
 
 // ── 내부 헬퍼 ─────────────────────────────────────────────────────────────────
 DeviceRepository::DeviceEntry* DeviceRepository::entryFor(const QString& id) const

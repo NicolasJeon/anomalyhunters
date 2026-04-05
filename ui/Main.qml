@@ -69,11 +69,13 @@ Window {
         }
 
         DetailPanel {
-            SplitView.fillWidth: true
+            SplitView.fillWidth:    true
+            SplitView.minimumWidth: 560
             selDev:           repository.selectedDevice
             selInf:           repository.selectedInference
             selTS:            repository.selectedTimeSeries
             selectedDeviceId: repository.selectedDeviceId
+            recording:        repository.selectedDeviceRecording
             onStartRequested:     repository.startDevice(repository.selectedDeviceId)
             onStopRequested:      repository.stopDevice(repository.selectedDeviceId)
             onEmergencyRequested: repository.emergencyStop(repository.selectedDeviceId)

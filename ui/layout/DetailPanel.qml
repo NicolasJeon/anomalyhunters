@@ -10,6 +10,10 @@ Rectangle {
     property var    selInf:           ({})
     property var    selTS:            []
     property string selectedDeviceId: ""
+    property bool   recording:        false
+
+    property bool testMode:    false
+    property var  testSeries:  []
 
     signal startRequested()
     signal stopRequested()
@@ -40,7 +44,7 @@ Rectangle {
             name:          root.selDev["name"]          ?? ""
             type:          root.selDev["type"]          ?? ""
             controlStatus: root.selDev["controlStatus"] ?? "stopped"
-            onStartRequested:     root.startRequested()
+            onStartRequested:     { root.testMode = false; root.startRequested() }
             onStopRequested:      root.stopRequested()
             onEmergencyRequested: root.emergencyRequested()
             onResetRequested:     root.resetRequested()
@@ -51,7 +55,8 @@ Rectangle {
         RowLayout {
             id: midRow
             Layout.fillWidth: true
-            Layout.preferredHeight: 140
+            Layout.preferredHeight: 160
+            Layout.minimumHeight:   140
             spacing: 10
 
             ImageCard {
@@ -73,20 +78,38 @@ Rectangle {
                 hasData:       root.selTS.length > 0
                 temperature:   root.selTS.length > 0 ? root.selTS[root.selTS.length-1]["temperature"] : 0
                 power:         root.selTS.length > 0 ? root.selTS[root.selTS.length-1]["power"]       : 0
+                recording:     root.recording
+                testMode:      root.testMode // qmllint disable missing-property
+                onRecordToggled: repository.toggleRecording(root.selectedDeviceId) // qmllint disable unqualified
             }
         }
 
-        // ③ 히스토리 차트
+        // ③ 히스토리 차트 (normal) + Test with Data 입력 (test mode) 통합
         HistoryChart {
             Layout.fillWidth: true
-            timeSeries: root.selTS
+            Layout.preferredHeight: root.testMode ? -1  : 160
+            Layout.fillHeight:      root.testMode
+            Layout.minimumHeight:   160
+            timeSeries: root.testMode ? root.testSeries : root.selTS
+            canTest:    (root.selDev["controlStatus"] ?? "stopped") === "stopped"
+            testMode:   root.testMode
+            deviceId:   root.selectedDeviceId
+            onTestToggled: { // qmllint disable unqualified
+                root.testMode = !root.testMode
+                if (root.testMode) {
+                    repository.clearDeviceDisplay(root.selectedDeviceId)
+                } else {
+                    root.testSeries = []
+                }
+            }
+            onPreviewChanged: (series) => root.testSeries = series // qmllint disable unqualified
         }
 
-        // ④ 로그 리스트
-        LogList {
+        // 빈 공간 채우기 (normal 모드에서 HistoryChart 아래 여백)
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            timeSeries: root.selTS
+            visible: !root.testMode
         }
     }
 }

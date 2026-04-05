@@ -43,6 +43,12 @@ AnomalyDetector::~AnomalyDetector()
     delete ort_;
 }
 
+// ── reset ─────────────────────────────────────────────────────────────────
+void AnomalyDetector::reset()
+{
+    buffer_.clear();
+}
+
 // ── push ──────────────────────────────────────────────────────────────────
 AnomalyDetector::Result AnomalyDetector::push(float temperature, float power)
 {

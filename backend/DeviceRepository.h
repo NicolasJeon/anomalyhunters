@@ -9,6 +9,7 @@
 #include <QVector>
 #include "Device.h"
 #include "AnomalyDetector.h"
+#include "DatabaseManager.h"
 #include "DeviceTimeSeriesSimulator.h"
 
 // 앱의 핵심 백엔드 — 모든 장비 데이터와 추론 상태를 관리한다.
@@ -33,6 +34,9 @@ class DeviceRepository : public QObject
     Q_PROPERTY(QVariantMap selectedInference
                READ selectedInference NOTIFY selectedInferenceChanged)
 
+    Q_PROPERTY(bool selectedDeviceRecording
+               READ selectedDeviceRecording NOTIFY selectedDeviceChanged)
+
 public:
     explicit DeviceRepository(const QString& modelPath,
                               QObject* parent = nullptr);
@@ -44,6 +48,7 @@ public:
     QVariantMap  selectedDevice()    const;
     QVariantList selectedTimeSeries() const;
     QVariantMap  selectedInference() const;
+    bool         selectedDeviceRecording() const;
 
     void setSelectedDeviceId(const QString& id);
 
@@ -65,6 +70,16 @@ public:
     Q_INVOKABLE void startSimulation();
     Q_INVOKABLE void stopSimulation();
 
+    // ── Recording ──────────────────────────────────────────────────────────
+    Q_INVOKABLE void toggleRecording(QString deviceId);
+
+    // ── Test with Data ─────────────────────────────────────────────────────
+    // series: QVariantList of QVariantMap { "temperature": float, "power": float }
+    Q_INVOKABLE void runTestSeries(QString deviceId, QVariantList series);
+
+    // Test mode 진입 시 시리즈·추론 상태 초기화 (UI 클린 슬레이트)
+    Q_INVOKABLE void clearDeviceDisplay(QString deviceId);
+
 signals:
     void devicesChanged();
     void selectedDeviceChanged();
@@ -82,6 +97,8 @@ private:
         AnomalyDetector*          detector = nullptr;
         InferenceState            inference;
         QVector<TimeSeriesSample> series;
+        bool                      recording        = false;
+        QString                   prevHealthStatus = "normal";
 
         ~DeviceEntry() { delete detector; }
     };
