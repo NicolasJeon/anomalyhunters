@@ -2,9 +2,7 @@
 
 #include <onnxruntime_cxx_api.h>
 
-#include <algorithm>
-#include <cmath>
-#include <numeric>
+#include <array>
 #include <stdexcept>
 #ifdef _WIN32
 #  include <locale>
@@ -43,29 +41,15 @@ AnomalyDetector::~AnomalyDetector()
     delete ort_;
 }
 
-// ── reset ─────────────────────────────────────────────────────────────────
-void AnomalyDetector::reset()
+
+// ── predict ───────────────────────────────────────────────────────────────
+AnomalyDetector::Result AnomalyDetector::predict(float temperature, float power)
 {
-    buffer_.clear();
-}
-
-// ── push ──────────────────────────────────────────────────────────────────
-AnomalyDetector::Result AnomalyDetector::push(float temperature, float power)
-{
-    buffer_.push_back({temperature, power});
-    if (static_cast<int>(buffer_.size()) > SEQ_LEN)
-        buffer_.pop_front();
-
-    if (static_cast<int>(buffer_.size()) < SEQ_LEN)
-        return {};   // label == -1
-
-    // ── feature extraction ────────────────────────────────────────────────
-    auto features = extractFeatures();
+    std::array<float, FEATURE_SIZE> features = { temperature, power };
 
     // ── ONNX 추론 ─────────────────────────────────────────────────────────
     Ort::AllocatorWithDefaultOptions allocator;
 
-    // input
     std::vector<int64_t> inputShape = {1, FEATURE_SIZE};
     Ort::MemoryInfo memInfo = Ort::MemoryInfo::CreateCpu(
         OrtArenaAllocator, OrtMemTypeDefault);
@@ -75,10 +59,9 @@ AnomalyDetector::Result AnomalyDetector::push(float temperature, float power)
         features.data(), features.size(),
         inputShape.data(), inputShape.size());
 
-    // input / output 이름
-    auto inputNameAlloc  = ort_->session.GetInputNameAllocated(0, allocator);
-    auto outLabel        = ort_->session.GetOutputNameAllocated(0, allocator);
-    auto outProb         = ort_->session.GetOutputNameAllocated(1, allocator);
+    auto inputNameAlloc = ort_->session.GetInputNameAllocated(0, allocator);
+    auto outLabel       = ort_->session.GetOutputNameAllocated(0, allocator);
+    auto outProb        = ort_->session.GetOutputNameAllocated(1, allocator);
 
     const char* inputNames[]  = { inputNameAlloc.get() };
     const char* outputNames[] = { outLabel.get(), outProb.get() };
@@ -100,66 +83,4 @@ AnomalyDetector::Result AnomalyDetector::push(float temperature, float power)
     res.prob_warning  = probData[1];
     res.prob_abnormal = probData[2];
     return res;
-}
-
-// ── extractFeatures ───────────────────────────────────────────────────────
-// Python extract_features() 와 완전 동일한 순서
-std::array<float, AnomalyDetector::FEATURE_SIZE>
-AnomalyDetector::extractFeatures() const
-{
-    const int N = static_cast<int>(buffer_.size());
-
-    std::vector<float> temp(N), power(N);
-    for (int i = 0; i < N; ++i) {
-        temp[i]  = buffer_[i][0];
-        power[i] = buffer_[i][1];
-    }
-
-    // ── 통계 헬퍼 ──────────────────────────────────────────────────────────
-    auto mean = [&](const std::vector<float>& v) {
-        return std::accumulate(v.begin(), v.end(), 0.0f) / v.size();
-    };
-    auto minv = [&](const std::vector<float>& v) {
-        return *std::min_element(v.begin(), v.end());
-    };
-    auto maxv = [&](const std::vector<float>& v) {
-        return *std::max_element(v.begin(), v.end());
-    };
-    auto diffMaxAbs = [&](const std::vector<float>& v) {
-        float m = 0.0f;
-        for (int i = 1; i < static_cast<int>(v.size()); ++i)
-            m = std::max(m, std::abs(v[i] - v[i-1]));
-        return m;
-    };
-
-    float tMean = mean(temp),  pMean = mean(power);
-    float tStd  = 0.0f,        pStd  = 0.0f;
-    for (int i = 0; i < N; ++i) {
-        tStd += (temp[i]  - tMean) * (temp[i]  - tMean);
-        pStd += (power[i] - pMean) * (power[i] - pMean);
-    }
-    tStd = std::sqrt(tStd / N);
-    pStd = std::sqrt(pStd / N);
-
-    float corr = 0.0f;
-    if (tStd > 1e-6f && pStd > 1e-6f) {
-        float cov = 0.0f;
-        for (int i = 0; i < N; ++i)
-            cov += (temp[i] - tMean) * (power[i] - pMean);
-        corr = (cov / N) / (tStd * pStd);
-    }
-
-    return {
-        tMean,
-        minv(temp),
-        maxv(temp),
-        temp.back(),
-        pMean,
-        minv(power),
-        maxv(power),
-        power.back(),
-        diffMaxAbs(temp),
-        diffMaxAbs(power),
-        corr
-    };
 }

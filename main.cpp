@@ -4,7 +4,7 @@
 #include <QFile>
 #include <QStandardPaths>
 
-#include "backend/DeviceRepository.h"
+#include "backend/EquipmentManager.h"
 #include "backend/DatabaseManager.h"
 
 // Qt 리소스에 embed된 ONNX 모델을 임시 경로로 추출
@@ -27,10 +27,10 @@ int main(int argc, char *argv[])
     DatabaseManager::instance().init();
 
     const QString modelPath = extractModelToTemp();
-    DeviceRepository repository(modelPath);
+    EquipmentManager equipmentManager(modelPath);
 
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty("repository", &repository);
+    engine.rootContext()->setContextProperty("equipmentManager", &equipmentManager);
 
     QObject::connect(
         &engine,

@@ -74,8 +74,8 @@ struct StateLogEntry {
     }
 };
 
-// ── Device ───────────────────────────────────────────────────────────────────
-struct Device {
+// ── Equipment ────────────────────────────────────────────────────────────────
+struct Equipment {
     QString id;
     QString name;
     QString healthStatus;    // N/A | Normal | Warning | Abnormal

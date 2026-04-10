@@ -9,102 +9,62 @@ import onnxruntime as ort
 SEED = 42
 rng = np.random.default_rng(SEED)
 
-SEQ_LEN = 10
-
 # label: 0 = normal, 1 = warning, 2 = abnormal
+#
+# 입력: 단일 샘플 [temperature, power]  (FEATURE_SIZE = 2)
+#
+# 판단 기준:
+#   normal   : 온도 28–45°C, 전력 = 온도 × 1.5 ± noise (비례 관계 유지)
+#   warning  : 온도 정상 범위, 전력 비정상적으로 높음 (temp × 1.5 + 20–35 W)
+#   abnormal : 고온 (>50°C),  또는 고온 + 전력 급증 (관계 붕괴)
 
 
-def make_normal_sequence(seq_len=SEQ_LEN):
-    temp = [rng.uniform(30.0, 35.0)]
-    for _ in range(seq_len - 1):
-        next_temp = temp[-1] + rng.normal(0.0, 1.0)
-        next_temp = np.clip(next_temp, 28.0, 45.0)
-        temp.append(next_temp)
-
-    temp = np.array(temp, dtype=np.float32)
-    power = temp * 1.5 + rng.normal(0.0, 2.0, size=seq_len)
-    power = np.clip(power, 40.0, 80.0).astype(np.float32)
-
-    return np.stack([temp, power], axis=1)
+def make_normal_sample():
+    temp  = rng.uniform(28.0, 45.0)
+    power = temp * 1.5 + rng.normal(0.0, 3.0)
+    power = float(np.clip(power, 40.0, 80.0))
+    return np.array([temp, power], dtype=np.float32)
 
 
-def inject_warning(seq):
-    """경고 패턴: 전력 소폭 상승 (온도 정상 유지)"""
-    seq = seq.copy()
-    start = rng.integers(seq.shape[0] // 2, seq.shape[0])
-    seq[start:, 1] += rng.uniform(14.0, 22.0)
-    return seq.astype(np.float32)
+def make_warning_sample():
+    temp  = rng.uniform(28.0, 45.0)
+    power = temp * 1.5 + rng.uniform(20.0, 35.0) + rng.normal(0.0, 2.0)
+    power = float(np.clip(power, 40.0, 130.0))
+    return np.array([temp, power], dtype=np.float32)
 
 
-def inject_abnormal(seq):
-    """이상 패턴: 고온 또는 온도+전력 동시 급증"""
-    seq = seq.copy()
+def make_abnormal_sample():
     abnormal_type = rng.integers(0, 2)
-
     if abnormal_type == 0:
         # A. 고온 이상
-        start = rng.integers(seq.shape[0] // 2, seq.shape[0])
-        seq[start:, 0] += rng.uniform(18.0, 25.0)
+        temp  = rng.uniform(50.0, 70.0)
+        power = temp * 1.5 + rng.normal(0.0, 3.0)
+        power = float(np.clip(power, 40.0, 130.0))
     else:
         # B. 고온 + 전력 동시 급증 (관계 붕괴)
-        start = rng.integers(seq.shape[0] // 2, seq.shape[0])
-        seq[start:, 0] += rng.uniform(10.0, 18.0)
-        seq[start:, 1] += rng.uniform(30.0, 40.0)
-
-    return seq.astype(np.float32)
-
-
-def extract_features(seq):
-    temp = seq[:, 0]
-    power = seq[:, 1]
-
-    temp_diff = np.diff(temp)
-    power_diff = np.diff(power)
-
-    corr = 0.0
-    if temp.std() > 1e-6 and power.std() > 1e-6:
-        corr = np.corrcoef(temp, power)[0, 1]
-
-    features = np.array([
-        temp.mean(),
-        temp.min(),
-        temp.max(),
-        temp[-1],
-        power.mean(),
-        power.min(),
-        power.max(),
-        power[-1],
-        np.abs(temp_diff).max() if len(temp_diff) > 0 else 0.0,
-        np.abs(power_diff).max() if len(power_diff) > 0 else 0.0,
-        corr
-    ], dtype=np.float32)
-
-    return features
+        temp  = rng.uniform(45.0, 65.0)
+        power = temp * 1.5 + rng.uniform(35.0, 55.0) + rng.normal(0.0, 2.0)
+        power = float(np.clip(power, 40.0, 130.0))
+    return np.array([temp, power], dtype=np.float32)
 
 
-def build_dataset(n_per_class=1500):
+def build_dataset(n_per_class=2000):
     X_list, y_list = [], []
 
     for _ in range(n_per_class):
-        seq = make_normal_sequence()
-        X_list.append(extract_features(seq))
-        y_list.append(0)  # normal
+        X_list.append(make_normal_sample())
+        y_list.append(0)
 
     for _ in range(n_per_class):
-        seq = make_normal_sequence()
-        seq = inject_warning(seq)
-        X_list.append(extract_features(seq))
-        y_list.append(1)  # warning
+        X_list.append(make_warning_sample())
+        y_list.append(1)
 
     for _ in range(n_per_class):
-        seq = make_normal_sequence()
-        seq = inject_abnormal(seq)
-        X_list.append(extract_features(seq))
-        y_list.append(2)  # abnormal
+        X_list.append(make_abnormal_sample())
+        y_list.append(2)
 
     X = np.array(X_list, dtype=np.float32)
     y = np.array(y_list, dtype=np.int64)
-
     return X, y
 
 
@@ -144,7 +104,7 @@ def verify_onnx(model_path, X_test):
     session = ort.InferenceSession(model_path)
     input_name = session.get_inputs()[0].name
     output_names = [o.name for o in session.get_outputs()]
-    print("Input:", input_name)
+    print("Input :", input_name, session.get_inputs()[0].shape)
     print("Outputs:", output_names)
 
     outputs = session.run(None, {input_name: X_test[:5].astype(np.float32)})

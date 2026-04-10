@@ -30,15 +30,24 @@ endif()
 qt_add_executable(appQtFacility
     main.cpp
     # backend
-    backend/Device.h
+    backend/Equipment.h
     backend/AnomalyDetector.h
     backend/AnomalyDetector.cpp
     backend/DeviceTimeSeriesSimulator.h
     backend/DeviceTimeSeriesSimulator.cpp
-    backend/DeviceRepository.h
-    backend/DeviceRepository.cpp
+    backend/EquipmentManager.h
+    backend/EquipmentManager.cpp
+    backend/EquipmentMonitor.h
+    backend/EquipmentMonitor.cpp
     backend/DatabaseManager.h
     backend/DatabaseManager.cpp
+)
+
+# ── Constant.qml 싱글톤 선언 ─────────────────────────────────────────────
+# QT_QML_SINGLETON_TYPE 속성을 설정해야 qmldir에 "singleton" 키워드가 추가됩니다.
+# (pragma Singleton 만으로는 cmake가 자동 감지하지 않습니다.)
+set_source_files_properties(ui/components/Constant.qml
+    PROPERTIES QT_QML_SINGLETON_TYPE TRUE
 )
 
 # ── QML 모듈 ──────────────────────────────────────────────────────────────
@@ -47,23 +56,32 @@ qt_add_qml_module(appQtFacility
     VERSION 1.0
     QML_FILES
         ui/Main.qml
-        ui/components/AddDeviceDialog.qml
-        ui/components/EditDeviceDialog.qml
-        ui/layout/DetailPanel.qml
-        ui/components/DeviceHeader.qml
-        ui/components/DeviceListItem.qml
+        # layout — 화면 전체 구성
+        ui/layout/MasterDetailLayout.qml
+        ui/layout/MasterDetailLayoutForm.ui.qml
+        ui/layout/MasterLayout.qml
+        ui/layout/MasterLayoutForm.ui.qml
+        ui/layout/DetailLayout.qml
+        ui/layout/DetailLayoutForm.ui.qml
+        # components — 재사용 UI 요소
+        ui/components/AppButton.qml
+        ui/components/Constant.qml
+        ui/components/EquipmentDialog.qml
+        ui/components/EquipmentHeader.qml
+        ui/components/EquipmentListItem.qml
         ui/components/HistoryChart.qml
         ui/components/ImageCard.qml
-        ui/components/InferenceCard.qml
-        ui/components/LogList.qml
-        ui/layout/MasterPanel.qml
-        ui/components/SensorCard.qml
+        ui/components/ManualSaveDialog.qml
+        ui/components/StateLogDialog.qml
+        ui/components/StateLogList.qml
+        ui/components/StateLogPanel.qml
         ui/components/StatusCard.qml
     RESOURCES
         images/air_circulator.png
         images/temp_controller.png
         images/pump.png
         images/generator.png
+        images/default.png
 )
 
 # ── ONNX 모델을 Qt 리소스로 embed ─────────────────────────────────────────
@@ -107,6 +125,6 @@ endif()
 include(GNUInstallDirs)
 install(TARGETS appQtFacility
     BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

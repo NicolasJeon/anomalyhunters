@@ -7,8 +7,8 @@ import QtFacility
 Rectangle {
     id: root
 
-    property var  deviceData: ({})
-    property bool isSelected: false
+    property var  equipmentData: ({})
+    property bool isSelected:    false
 
     signal selected()
     signal startRequested()
@@ -16,8 +16,8 @@ Rectangle {
     signal deleteRequested()
 
     // ── 편의 속성 (반복 참조 단축) ─────────────────────────────────────────
-    readonly property string controlStatus: deviceData["controlStatus"] ?? "Stopped"
-    readonly property string healthStatus:  deviceData["healthStatus"]  ?? "Normal"
+    readonly property string controlStatus: equipmentData["controlStatus"] ?? "Stopped"
+    readonly property string healthStatus:  equipmentData["healthStatus"]  ?? "Normal"
 
     // healthStatus → 표시 색상 (Constant.healthColor 위임)
     function healthColor(status) { return Constant.healthColor(status) }
@@ -90,8 +90,8 @@ Rectangle {
                         fill: parent
                         margins: 2
                     }
-                    source: (root.deviceData["imageSource"] ?? "") !== ""
-                            ? root.deviceData["imageSource"]
+                    source: (root.equipmentData["imageSource"] ?? "") !== ""
+                            ? root.equipmentData["imageSource"]
                             : "qrc:/qt/qml/QtFacility/images/default.png"
                     fillMode: Image.PreserveAspectFit
                     smooth: true
@@ -119,7 +119,7 @@ Rectangle {
             spacing: 2
 
             Text {
-                text: root.deviceData["name"] ?? ""
+                text: root.equipmentData["name"] ?? ""
                 color: "#d0d0ee"
                 font.pixelSize: 13
                 font.bold: true
