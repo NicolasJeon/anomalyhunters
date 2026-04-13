@@ -28,21 +28,26 @@ bool DatabaseManager::init(const QString& path)
     pragma.exec("PRAGMA journal_mode=DELETE");
     pragma.exec("PRAGMA synchronous=FULL");
 
-    // Schema v2: drop old table if it has the legacy 'event' column
+    // Schema migration: drop state_events if it has legacy columns or wrong column types
     {
         QSqlQuery check;
         check.exec("PRAGMA table_info(state_events)");
-        bool hasEventCol = false;
-        bool tableExists = false;
+        bool hasEventCol        = false;
+        bool hasIntegerRecordAt = false;
+        bool tableExists        = false;
         while (check.next()) {
             tableExists = true;
-            if (check.value(1).toString() == "event")
+            const QString colName = check.value(1).toString();
+            const QString colType = check.value(2).toString().toUpper();
+            if (colName == "event")
                 hasEventCol = true;
+            if (colName == "recorded_at" && colType == "INTEGER")
+                hasIntegerRecordAt = true;
         }
-        if (tableExists && hasEventCol) {
+        if (tableExists && (hasEventCol || hasIntegerRecordAt)) {
             QSqlQuery drop;
             drop.exec("DROP TABLE IF EXISTS state_events");
-            qDebug() << "DatabaseManager: migrated schema — old table dropped";
+            qDebug() << "DatabaseManager: migrated schema — state_events recreated";
         }
     }
 
@@ -70,7 +75,7 @@ bool DatabaseManager::init(const QString& path)
             control_status TEXT    NOT NULL,
             temperature    REAL,
             power          REAL,
-            recorded_at    INTEGER NOT NULL
+            recorded_at    TEXT    NOT NULL
         )
     )");
 
@@ -163,8 +168,11 @@ QVariantList DatabaseManager::queryStateEvents(const QString& equipmentId, int l
     QVariantList result;
     if (q.exec()) {
         while (q.next()) {
+            const QString tsStr = q.value(0).toString();
+            const QDateTime dt  = QDateTime::fromString(tsStr, "yyyy-MM-dd HH:mm:ss");
+
             QVariantMap entry;
-            entry["timestampMs"]   = q.value(0).toLongLong();
+            entry["timestampMs"]   = dt.isValid() ? dt.toMSecsSinceEpoch() : 0LL;
             entry["state"]         = q.value(1).toString();
             entry["controlStatus"] = q.value(2).toString();
             entry["temperature"]   = q.value(3).toFloat();
@@ -201,6 +209,10 @@ void DatabaseManager::insertStateEvent(
 {
     if (!initialized_) return;
 
+    // 날짜: "YYYY-MM-DD HH:MM:SS" 형식으로 저장
+    const QString recordedAt = QDateTime::fromMSecsSinceEpoch(timestampMs)
+                                   .toString("yyyy-MM-dd HH:mm:ss");
+
     QSqlQuery q;
     q.prepare(R"(
         INSERT INTO state_events
@@ -215,7 +227,7 @@ void DatabaseManager::insertStateEvent(
     q.bindValue(":control_status", controlStatus);
     q.bindValue(":temperature",    temperature);
     q.bindValue(":power",          power);
-    q.bindValue(":recorded_at",    timestampMs);
+    q.bindValue(":recorded_at",    recordedAt);
 
     if (!q.exec())
         qWarning() << "DatabaseManager: insertStateEvent failed:" << q.lastError().text();

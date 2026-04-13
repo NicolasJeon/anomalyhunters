@@ -47,14 +47,14 @@ ListView {
         policy: ScrollBar.AsNeeded
     }
 
-    // 빈 상태 안내
-    Text {
-        anchors.centerIn: parent
-        visible:          root.logs.length === 0
-        text:             root.emptyText
-        color:            "#333355"
-        font.pixelSize:   11
-    }
+    // // 빈 상태 안내
+    // Text {
+    //     anchors.centerIn: parent
+    //     visible:          root.logs.length === 0
+    //     text:             root.emptyText
+    //     color:            "#333355"
+    //     font.pixelSize:   11
+    // }
 
     delegate: Rectangle {
         id: row
@@ -139,7 +139,7 @@ ListView {
             Text {
                 text:                Qt.formatDateTime(
                                          new Date(row.modelData["timestampMs"] ?? 0),
-                                         "HH:mm:ss")
+                                         row.fromDB ? "yyyy-MM-dd HH:mm:ss" : "HH:mm:ss")
                 color:               Constant.logSubText
                 font.pixelSize:      10 + root.fontSize
                 horizontalAlignment: Text.AlignRight

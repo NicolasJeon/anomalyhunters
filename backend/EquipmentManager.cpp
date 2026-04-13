@@ -1,15 +1,16 @@
 #include "EquipmentManager.h"
 #include "EquipmentMonitor.h"
 
+#include <cmath>
+
 #include <QDateTime>
 
 // ── 소멸자 ────────────────────────────────────────────────────────────────────
 EquipmentManager::~EquipmentManager() = default;
 
 // ── 생성자 ────────────────────────────────────────────────────────────────────
-EquipmentManager::EquipmentManager(const QString& modelPath, QObject* parent)
+EquipmentManager::EquipmentManager(QObject* parent)
     : QObject(parent)
-    , modelPath_(modelPath)
 {
     // DB에서 장비 목록 로드, 없으면 기본값 삽입
     const QVariantList saved = DatabaseManager::instance().loadEquipment();
@@ -40,12 +41,7 @@ EquipmentManager::EquipmentManager(const QString& modelPath, QObject* parent)
             entry->equipment.controlStatus = "Stopped";
             entry->equipment.imageSource   = img;
 
-            try {
-                entry->detector = std::make_unique<AnomalyDetector>(modelPath_.toStdString());
-            } catch (const std::exception& ex) {
-                qWarning("AnomalyDetector init failed (%s): %s", qPrintable(id), ex.what());
-                continue;
-            }
+            entry->detector = std::make_unique<AnomalyDetector>();
 
             equipmentOrder_.append(id);
             entries_.emplace(id, std::move(entry));
@@ -151,12 +147,7 @@ void EquipmentManager::addEquipment(QString name, QString imageSource)
     entry->equipment.controlStatus = "Stopped";
     entry->equipment.imageSource   = imageSource;
 
-    try {
-        entry->detector = std::make_unique<AnomalyDetector>(modelPath_.toStdString());
-    } catch (const std::exception& ex) {
-        qWarning("AnomalyDetector 초기화 실패 (%s): %s", qPrintable(id), ex.what());
-        return;
-    }
+    entry->detector = std::make_unique<AnomalyDetector>();
 
     equipmentOrder_.append(id);
     entries_.emplace(id, std::move(entry));
@@ -313,14 +304,18 @@ void EquipmentManager::clearEquipmentStateLogs(QString equipmentId)
 void EquipmentManager::appendStateLog(EquipmentEntry* e, const QString& event,
                                       float temperature, float power)
 {
+    // 소수 1째 자리로 반올림 — 로그와 DB가 항상 동일한 값을 갖도록
+    const float roundedTemp  = std::round(temperature * 10.0f) / 10.0f;
+    const float roundedPower = std::round(power       * 10.0f) / 10.0f;
+
     StateLogEntry le;
     le.logId         = nextLogId_++;
     le.timestampMs   = QDateTime::currentMSecsSinceEpoch();
     le.event         = event;
     le.healthStatus  = e->equipment.healthStatus;
     le.controlStatus = e->equipment.controlStatus;
-    le.temperature   = temperature;
-    le.power         = power;
+    le.temperature   = roundedTemp;
+    le.power         = roundedPower;
 
     if (e->stateLog.size() >= LOG_BUFFER)
         e->stateLog.removeFirst();

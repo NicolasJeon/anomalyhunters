@@ -1,13 +1,9 @@
 #pragma once
 
-#include <string>
-
 class AnomalyDetector
 {
 public:
-    static constexpr int FEATURE_SIZE = 2;   // [temperature, power]
-
-    // label: 0 = normal, 1 = warning, 2 = abnormal
+    // label: 0 = Normal, 1 = Warning, 2 = Abnormal
     struct Result {
         int   label         = -1;
         float prob_normal   = 0.0f;
@@ -15,15 +11,11 @@ public:
         float prob_abnormal = 0.0f;
     };
 
-    explicit AnomalyDetector(const std::string& modelPath);
-    ~AnomalyDetector();
+    AnomalyDetector() = default;
 
-    // 단일 (temperature, power) 샘플로 즉시 추론
+    // 결정론적 규칙 기반 추론
+    //   Abnormal : temperature >= 60
+    //   Warning  : (temperature >= 50 && power >= 50) || power >= 60
+    //   Normal   : 나머지
     Result predict(float temperature, float power);
-
-
-private:
-    // ONNX Runtime objects (heap-allocated to avoid include cascade)
-    struct OrtImpl;
-    OrtImpl* ort_ = nullptr;
 };

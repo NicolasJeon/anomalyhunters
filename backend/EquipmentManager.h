@@ -55,7 +55,7 @@ public:
         QString                          prevHealthStatus = "N/A";
     };
 
-    explicit EquipmentManager(const QString& modelPath, QObject* parent = nullptr);
+    explicit EquipmentManager(QObject* parent = nullptr);
     ~EquipmentManager();
 
     // ── Property read ──────────────────────────────────────────────────────
@@ -111,7 +111,6 @@ signals:
     void selectedStateLogsChanged();
 
 private:
-    QString     modelPath_;
     QStringList equipmentOrder_;
     std::map<QString, std::unique_ptr<EquipmentEntry>> entries_;
     QString     selectedEquipmentId_;
