@@ -37,8 +37,14 @@ ColumnLayout {
     property real testPower:       55.0
 
     function collectSeries() {
-        return [{ "temperature": root.testTemperature, "power": root.testPower,
-                  "label": -1, "abnormalDist": 0 }]
+        // tempInput/pwrInput이 아직 생성 안 됐을 수 있으므로 fallback 처리
+        const t = (typeof tempInput !== "undefined")
+                  ? Math.max(root.tempMin, Math.min(root.tempMax, parseFloat(tempInput.text) || root.testTemperature))
+                  : root.testTemperature
+        const p = (typeof pwrInput !== "undefined")
+                  ? Math.max(root.pwrMin,  Math.min(root.pwrMax,  parseFloat(pwrInput.text)  || root.testPower))
+                  : root.testPower
+        return [{ "temperature": t, "power": p, "label": -1, "abnormalDist": 0 }]
     }
     function notifyPreview() { previewChanged(collectSeries()) }
 
@@ -215,6 +221,7 @@ ColumnLayout {
                     border.color: "#2a4a5a"
                     radius:       4
                     TextInput {
+                        id:                  tempInput
                         anchors { fill: parent; margins: 6 }
                         color:               Constant.sensorTemp
                         font.pixelSize:      22
@@ -254,6 +261,7 @@ ColumnLayout {
                     border.color: "#2a3a5a"
                     radius:       4
                     TextInput {
+                        id:                  pwrInput
                         anchors { fill: parent; margins: 6 }
                         color:               Constant.sensorPower
                         font.pixelSize:      22
