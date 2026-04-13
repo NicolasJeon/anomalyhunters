@@ -70,9 +70,7 @@ Rectangle {
                 controlStatus: root.selDev["controlStatus"] ?? "Stopped"
                 label:         root.selInf["label"]         ?? -1
                 statusText:    root.selInf["statusText"]    ?? "—"
-                probNormal:    root.selInf["probNormal"]    ?? 0
-                probWarning:   root.selInf["probWarning"]   ?? 0
-                probAbnormal:  root.selInf["probAbnormal"]  ?? 0
+                abnormalDist:  root.selInf["abnormalDist"]  ?? 0
                 hasData:       root.selTS.length > 0
                 temperature:   root.selTS.length > 0 ? root.selTS[root.selTS.length-1]["temperature"] : 0
                 power:         root.selTS.length > 0 ? root.selTS[root.selTS.length-1]["power"]       : 0

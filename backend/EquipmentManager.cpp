@@ -105,8 +105,7 @@ QVariantList EquipmentManager::selectedTimeSeries() const
 QVariantMap EquipmentManager::selectedInference() const
 {
     const EquipmentEntry* e = entryFor(selectedEquipmentId_);
-    if (!e) return {{"label", -1}, {"probNormal", 0.f},
-                    {"probAbnormal", 0.f}, {"statusText", "No Equipment"}};
+    if (!e) return {{"label", -1}, {"abnormalDist", 0.f}, {"statusText", "No Equipment"}};
     return e->inference.toVariantMap();
 }
 

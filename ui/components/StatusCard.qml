@@ -9,9 +9,7 @@ Rectangle {
     property string controlStatus: "Stopped"
     property int    label:         -1
     property string statusText:    "—"
-    property real   probNormal:    0.0
-    property real   probWarning:   0.0
-    property real   probAbnormal:  0.0
+    property real   abnormalDist:  0.0
     property bool   hasData:       false
     property real   temperature:   0.0
     property real   power:         0.0
@@ -96,19 +94,12 @@ Rectangle {
             }
         }
 
-        // ── ② 경쟁 게이지 ────────────────────────────────────────────────
-        Text { text: "Probability Distribution"; color: Constant.textLabel; font.pixelSize: 16 * root._fs }
+        // ── ② Abnormal 근접도 게이지 ─────────────────────────────────────
+        Text { text: "Abnormal Proximity"; color: Constant.textLabel; font.pixelSize: 16 * root._fs }
 
         RowLayout {
             Layout.fillWidth: true
             spacing: 6
-
-            Text {
-                text: root.label === -1 ? "—" : (root.probNormal * 100).toFixed(0) + "%"
-                color: Constant.normal
-                font.pixelSize: 16 * root._fs
-                font.bold: true
-            }
 
             Rectangle {
                 Layout.fillWidth: true
@@ -118,43 +109,21 @@ Rectangle {
 
                 Rectangle {
                     anchors.left: parent.left
-                    width: parent.width * root.probNormal
+                    width: parent.width * root.abnormalDist
                     height: parent.height
                     radius: 3
-                    color: Constant.gaugeNormal
+                    color: root._statusColor
                     Behavior on width { NumberAnimation { duration: 200 } }
-                }
-                Rectangle {
-                    anchors.left: parent.left
-                    anchors.leftMargin: parent.width * root.probNormal
-                    width: parent.width * root.probWarning
-                    height: parent.height
-                    color: Constant.warning
-                    Behavior on width { NumberAnimation { duration: 200 } }
-                    Behavior on anchors.leftMargin { NumberAnimation { duration: 200 } }
-                }
-                Rectangle {
-                    anchors.right: parent.right
-                    width: parent.width * root.probAbnormal
-                    height: parent.height
-                    radius: 3
-                    color: Constant.gaugeAbnormal
-                    Behavior on width { NumberAnimation { duration: 200 } }
+                    Behavior on color { ColorAnimation { duration: 250 } }
                 }
             }
 
             Text {
-                text: root.label === -1 ? "—" : (root.probWarning * 100).toFixed(0) + "%"
-                color: Constant.warning
+                text: root.label === -1 ? "—" : (root.abnormalDist * 100).toFixed(0) + "%"
+                color: root._statusColor
                 font.pixelSize: 16 * root._fs
                 font.bold: true
-            }
-
-            Text {
-                text: root.label === -1 ? "—" : (root.probAbnormal * 100).toFixed(0) + "%"
-                color: root._rightBarColor
-                font.pixelSize: 16 * root._fs
-                font.bold: true
+                Behavior on color { ColorAnimation { duration: 250 } }
             }
         }
 

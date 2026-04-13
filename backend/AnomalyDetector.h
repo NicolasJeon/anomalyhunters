@@ -6,16 +6,17 @@ public:
     // label: 0 = Normal, 1 = Warning, 2 = Abnormal
     struct Result {
         int   label         = -1;
-        float prob_normal   = 0.0f;
-        float prob_warning  = 0.0f;
-        float prob_abnormal = 0.0f;
+        float abnormal_dist = 0.0f;   // 0.0 (정상 범위) ~ 1.0 (Abnormal 임계값)
     };
 
     AnomalyDetector() = default;
 
-    // 결정론적 규칙 기반 추론
-    //   Abnormal : temperature >= 60
-    //   Warning  : (temperature >= 50 && power >= 50) || power >= 60
-    //   Normal   : 나머지
+    // dist = clamp(temp_dist + power_dist * 0.4, 0, 1)
+    //   temp_dist  = (temp  - 28) / (60 - 28)
+    //   power_dist = (power - 40) / (80 - 40)
+    //
+    //   dist >= 0.75 → Abnormal
+    //   dist >= 0.50 → Warning
+    //   dist <  0.50 → Normal
     Result predict(float temperature, float power);
 };

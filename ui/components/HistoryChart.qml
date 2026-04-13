@@ -30,7 +30,7 @@ ColumnLayout {
 
     function collectSeries() {
         return [{ "temperature": root.testTemperature, "power": root.testPower,
-                  "label": -1, "probAbnormal": 0 }]
+                  "label": -1, "abnormalDist": 0 }]
     }
     function notifyPreview() { previewChanged(collectSeries()) }
 

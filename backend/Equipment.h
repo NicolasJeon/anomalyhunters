@@ -11,15 +11,15 @@ struct TimeSeriesSample {
     float  power        = 0.f;
     // 추론 결과도 함께 저장해 히스토리 바 색상에 사용
     int    label        = -1;
-    float  probAbnormal = 0.f;
+    float  abnormalDist = 0.f;   // 0.0 ~ 1.0
 
     QVariantMap toVariantMap() const {
         return {
-            { "timestampMs",   timestampMs  },
-            { "temperature",   temperature  },
-            { "power",         power        },
-            { "label",         label        },
-            { "probAbnormal",  probAbnormal }
+            { "timestampMs",  timestampMs  },
+            { "temperature",  temperature  },
+            { "power",        power        },
+            { "label",        label        },
+            { "abnormalDist", abnormalDist }
         };
     }
 };
@@ -27,9 +27,7 @@ struct TimeSeriesSample {
 // ── InferenceState ───────────────────────────────────────────────────────────
 struct InferenceState {
     int     label        = -1;
-    float   probNormal   = 0.f;
-    float   probWarning  = 0.f;
-    float   probAbnormal = 0.f;
+    float   abnormalDist = 0.f;   // 0.0 ~ 1.0
 
     QString statusText() const {
         if (label == -1) return QStringLiteral("N/A");
@@ -41,9 +39,7 @@ struct InferenceState {
     QVariantMap toVariantMap() const {
         return {
             { "label",        label        },
-            { "probNormal",   probNormal   },
-            { "probWarning",  probWarning  },
-            { "probAbnormal", probAbnormal },
+            { "abnormalDist", abnormalDist },
             { "statusText",   statusText() }
         };
     }

@@ -32,9 +32,7 @@ void EquipmentMonitor::tick()
         auto res = e->detector->predict(s.temperature, s.power);
 
         e->inference.label        = res.label;
-        e->inference.probNormal   = res.prob_normal;
-        e->inference.probWarning  = res.prob_warning;
-        e->inference.probAbnormal = res.prob_abnormal;
+        e->inference.abnormalDist = res.abnormal_dist;
 
         const QString prevHealth = e->prevHealthStatus;
         updateHealthStatus(e->equipment, e->inference);
@@ -49,7 +47,7 @@ void EquipmentMonitor::tick()
         ts.temperature  = s.temperature;
         ts.power        = s.power;
         ts.label        = e->inference.label;
-        ts.probAbnormal = res.prob_abnormal;
+        ts.abnormalDist = res.abnormal_dist;
 
         if (e->series.size() >= SERIES_BUFFER)
             e->series.removeFirst();
@@ -99,14 +97,12 @@ void EquipmentMonitor::runTestSeries(const QString& equipmentId, const QVariantL
         ts.temperature  = temp;
         ts.power        = power;
         ts.label        = lastResult.label;
-        ts.probAbnormal = lastResult.prob_abnormal;
+        ts.abnormalDist = lastResult.abnormal_dist;
         e->series.append(ts);
     }
 
     e->inference.label        = lastResult.label;
-    e->inference.probNormal   = lastResult.prob_normal;
-    e->inference.probWarning  = lastResult.prob_warning;
-    e->inference.probAbnormal = lastResult.prob_abnormal;
+    e->inference.abnormalDist = lastResult.abnormal_dist;
 
     updateHealthStatus(e->equipment, e->inference);
 
