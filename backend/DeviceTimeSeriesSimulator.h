@@ -1,33 +1,37 @@
 #pragma once
 
 #include <random>
+#include <array>
 
-// 정상 + 이상 패턴을 생성하는 순수 C++ 시뮬레이터.
-// 각 장비 인스턴스마다 독립적인 RNG 상태를 가진다.
+// 고정 시퀀스 시뮬레이터
+// 0=Normal, 1=Warning, 2=Abnormal
 class DeviceTimeSeriesSimulator
 {
 public:
     struct Sample { float temperature; float power; };
 
-    explicit DeviceTimeSeriesSimulator();
+    explicit DeviceTimeSeriesSimulator(int seqOffset = 0);
 
     Sample next();
 
-    bool inAnomalyWindow() const { return anomalyTicksLeft_ > 0; }
+    bool inAnomalyWindow() const { return SEQ[seqIdx_] == 2; }
 
 private:
-    std::mt19937                          rng_;
-    std::normal_distribution<float>       normDist_{0.f, 1.f};
-    std::uniform_int_distribution<int>    intDist2_{0, 2};
+    // 시퀀스: 정상→경고→이상→경고→정상→이상→경고→정상
+    static constexpr std::array<int, 8> SEQ = { 0, 1, 2, 1, 0, 2, 1, 0 };
+    static constexpr int TICKS_PER_STATE = 5;  // 상태당 틱 수
 
-    float baseTemp_         = 33.f;
-    int   normalTickCount_  = 0;
-    int   anomalyTicksLeft_ = 0;
-    int   anomalyType_      = 0;
-    int   anomalyInterval_  = 25;
+    // 상태별 기준값
+    static constexpr float TEMP_NORMAL   = 34.0f;
+    static constexpr float TEMP_WARNING  = 44.0f;
+    static constexpr float TEMP_ABNORMAL = 52.0f;
+    static constexpr float PWR_NORMAL    = 50.0f;
+    static constexpr float PWR_WARNING   = 62.0f;
+    static constexpr float PWR_ABNORMAL  = 72.0f;
 
-    static constexpr float TEMP_LOW  = 28.f;
-    static constexpr float TEMP_HIGH = 45.f;
-    static constexpr float PWR_LOW   = 40.f;
-    static constexpr float PWR_HIGH  = 80.f;
+    std::mt19937                    rng_;
+    std::normal_distribution<float> noise_{0.f, 0.6f};
+
+    int seqIdx_   = 0;
+    int tickCount_ = 0;
 };

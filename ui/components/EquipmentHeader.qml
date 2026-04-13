@@ -28,7 +28,7 @@ RowLayout {
     // 편집 버튼 (항상 표시)
     AppButton {
         implicitWidth: 64
-        label: "✎  Edit"
+        label: "Edit"
         bgColor: "#1a2035"
         hoverColor: "#253050"
         textColor: "#6688bb"
@@ -42,7 +42,7 @@ RowLayout {
     AppButton {
         visible: root.controlStatus === "Stopped"
         implicitWidth: 80
-        label: "▶  Start"
+        label: "Start"
         bgColor:    Constant.ctrlStartBg
         hoverColor: Constant.ctrlStartBgHov
         textColor:  Constant.ctrlStartText
@@ -53,7 +53,7 @@ RowLayout {
     AppButton {
         visible: root.controlStatus === "Running"
         implicitWidth: 70
-        label: "⏹  Stop"
+        label: "Stop"
         bgColor:    Constant.ctrlStopBg
         hoverColor: Constant.ctrlStopBgHov
         textColor:  Constant.ctrlStopText

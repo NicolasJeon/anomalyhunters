@@ -33,7 +33,7 @@ QtObject {
     readonly property color stopped:   "#8899aa"   // Stopped / inactive
 
     // ── 센서 수치 색상 ────────────────────────────────────────────────────
-    readonly property color sensorTemp:  "#44ccee"   // Temperature value text
+    readonly property color sensorTemp:  "#66ddaa"   // Temperature value text
     readonly property color sensorPower: "#66aaff"   // Power value text
 
     // ── 차트 슬롯 배경 ───────────────────────────────────────────────────
@@ -76,7 +76,7 @@ QtObject {
     // ── 제어 버튼 (Start / Stop / Delete) ────────────────────────────────
     readonly property color ctrlStartBg:     "#1a3a1a"
     readonly property color ctrlStartBgHov:  "#1a5a1a"
-    readonly property color ctrlStartText:   "#66dd66"
+    readonly property color ctrlStartText:   "#ffffff"
     readonly property color ctrlStartBorder: "#2a5a2a"
 
     readonly property color ctrlStopBg:      "#4a1a1a"
@@ -106,7 +106,7 @@ QtObject {
         if (s === "warning")  return warning
         if (s === "normal")   return normal
         if (s === "n/a")      return stopped
-        if (s === "start")    return waiting
+        if (s === "start")    return "#ffffff"
         if (s === "stop")     return stopped
         return textMuted
     }

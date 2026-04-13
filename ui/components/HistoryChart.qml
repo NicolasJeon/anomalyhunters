@@ -1,26 +1,34 @@
-pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
+import QtGraphs
 import QtFacility
 
-// 히스토리 바 차트 (Normal 모드) + Test with Data 입력 (Test 모드) 통합
-//
-// Normal 모드: 최근 10개 시계열 샘플을 온도/전력 바 차트로 시각화
-// Test  모드: 최대 10개 샘플을 직접 입력해 추론 테스트
+// 히스토리 라인 그래프 (Normal 모드) + Test with Data 입력 (Test 모드) 통합
 ColumnLayout {
     id: root
 
     // ── 속성 ───────────────────────────────────────────────────────────────
-    property var    timeSeries: []       // 표시할 시계열 샘플 목록
-    property bool   canTest:    false    // Test 모드 진입 가능 여부 (stopped 상태)
-    property bool   testMode:   false    // 현재 Test 모드 여부
-    property string equipmentId: ""     // 추론 요청 시 사용할 장비 ID
+    property var    timeSeries:  []
+    property bool   canTest:     false
+    property bool   testMode:    false
+    property string equipmentId: ""
 
-    // 온도/전력 도메인 (바 높이 계산에 사용)
+    readonly property int currentLabel: {
+        if (timeSeries.length === 0) return -1
+        return timeSeries[timeSeries.length - 1]["label"] ?? -1
+    }
+    readonly property color _tempDotColor:
+        currentLabel === 2 ? Constant.anomaly :
+        currentLabel === 1 ? Constant.warning : Constant.sensorTemp
+
+    readonly property color _pwrDotColor:
+        currentLabel === 2 ? Constant.anomaly :
+        currentLabel === 1 ? Constant.warning : Constant.sensorPower
+
     readonly property real tempMin:  28.0
     readonly property real tempMax:  70.0
     readonly property real pwrMin:   40.0
-    readonly property real pwrMax:  130.0
+    readonly property real pwrMax:  120.0
 
     signal testToggled()
     signal previewChanged(var series)
@@ -34,74 +42,27 @@ ColumnLayout {
     }
     function notifyPreview() { previewChanged(collectSeries()) }
 
-    spacing: 6
+    function _norm(val, mn, mx) { return (val - mn) / (mx - mn) * 100.0 }
 
-    // ── 인라인 컴포넌트: 센서 바 차트 ────────────────────────────────────
-    component SensorBar: ColumnLayout {
-        id: bar
-        required property string label        // 헤더 텍스트
-        required property string valueKey     // sample 딕셔너리 키 ("temperature" | "power")
-        required property real   valueMin
-        required property real   valueMax
-        required property color  normalColor  // label==0 일 때 바 색상
-
-        property var timeSeries: []           // 부모에서 주입
-
-        Layout.fillWidth: true
-        spacing: 4
-
-        Text { text: bar.label; color: Constant.textMuted; font.pixelSize: 10 }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 2
-
-            Repeater {
-                model: 10
-                delegate: Item {
-                    id:               slot
-                    required property int index
-                    Layout.fillWidth: true
-                    implicitHeight:   50
-
-                    readonly property var sample: {
-                        const ts     = bar.timeSeries
-                        const offset = ts.length - 10 + slot.index
-                        return offset >= 0 ? ts[offset] : null
-                    }
-                    readonly property real barHeight: slot.sample !== null
-                        ? Math.max(2, ((slot.sample[bar.valueKey] - bar.valueMin)
-                                       / (bar.valueMax - bar.valueMin)) * 50)
-                        : 0
-                    readonly property color barColor: {
-                        if (slot.sample === null) return "transparent"
-                        const lbl = slot.sample["label"]
-                        if (lbl === 0) return bar.normalColor
-                        if (lbl === 1) return Constant.gaugeWarning
-                        if (lbl === 2) return Constant.anomaly
-                        return Constant.textMuted
-                    }
-
-                    // 빈 슬롯 배경
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: 2
-                        color:  Constant.chartSlotBg
-                        visible: slot.sample === null
-                    }
-                    // 데이터 바
-                    Rectangle {
-                        anchors.bottom: parent.bottom
-                        width:   parent.width
-                        height:  slot.barHeight
-                        radius:  2
-                        visible: slot.sample !== null
-                        color:   slot.barColor
-                    }
-                }
-            }
+    function _updateSeries() {
+        tempSeries.clear()
+        pwrSeries.clear()
+        const ts = root.timeSeries
+        if (ts.length === 0) return
+        const t0 = ts[0]["timestampMs"] ?? 0
+        for (let i = 0; i < ts.length; i++) {
+            const sec = ((ts[i]["timestampMs"] ?? 0) - t0) / 1000.0
+            tempSeries.append(sec, _norm(ts[i]["temperature"] ?? root.tempMin, root.tempMin, root.tempMax))
+            pwrSeries.append(sec, _norm(ts[i]["power"]        ?? root.pwrMin,  root.pwrMin,  root.pwrMax))
         }
+        const rawMax = ((ts[ts.length - 1]["timestampMs"] ?? 0) - t0) / 1000.0
+        const xMax = Math.max(10, Math.ceil(rawMax / 5) * 5)
+        axisX.max = xMax
     }
+
+    onTimeSeriesChanged: _updateSeries()
+
+    spacing: 6
 
     // ── 헤더 행 ────────────────────────────────────────────────────────────
     RowLayout {
@@ -118,7 +79,6 @@ ColumnLayout {
 
         Item { Layout.fillWidth: true }
 
-        // Run 버튼 (Test 모드에서만 표시)
         AppButton {
             visible: root.testMode
             implicitWidth: 130
@@ -131,42 +91,100 @@ ColumnLayout {
             onClicked: equipmentManager.runTestSeries(root.equipmentId, root.collectSeries()) // qmllint disable unqualified
         }
 
-        // Test with Data 토글 버튼
         AppButton {
             visible: root.canTest
             implicitWidth: 120
             label: root.testMode ? "✕ Close Test" : "⚗ Test with Data"
-            bgColor:    root.testMode ? "#1a0830" : "#111a11"
-            hoverColor: root.testMode ? "#2a1040" : "#1a2a1a"
-            textColor:  root.testMode ? "#cc88ff" : "#55bb77"
+            bgColor:     root.testMode ? "#1a0830" : "#111a11"
+            hoverColor:  root.testMode ? "#2a1040" : "#1a2a1a"
+            textColor:   root.testMode ? "#cc88ff" : "#55bb77"
             borderColor: root.testMode ? "#aa44ff" : "#336644"
             fontSize: 12
             onClicked: root.testToggled()
         }
     }
 
-    // ── Normal 모드: 히스토리 바 차트 ──────────────────────────────────────
+    // ── Normal 모드: 통합 그래프 ───────────────────────────────────────────
     ColumnLayout {
-        visible: !root.testMode
+        visible:          !root.testMode
         Layout.fillWidth: true
         spacing: 4
 
-        SensorBar {
-            timeSeries:  root.timeSeries
-            label:       "Temperature  " + root.tempMin.toFixed(0) + " – " + root.tempMax.toFixed(0) + " °C"
-            valueKey:    "temperature"
-            valueMin:    root.tempMin
-            valueMax:    root.tempMax
-            normalColor: Constant.gaugeTemp
+        GraphsView {
+            Layout.fillWidth: true
+            implicitHeight:   140
+            marginLeft:       0
+            marginRight:      0
+            marginTop:        0
+            marginBottom:     0
+
+            theme: GraphsTheme {
+                backgroundColor:           Constant.chartSlotBg
+                plotAreaBackgroundColor:   Constant.chartSlotBg
+                plotAreaBackgroundVisible: true
+                gridVisible:               false
+                labelFont.pixelSize:       10
+                labelTextColor:            Constant.textMuted
+                seriesColors:              [Constant.sensorTemp, Constant.sensorPower]
+            }
+
+            axisX: ValueAxis {
+                id:           axisX
+                min:          0
+                max:          9
+                gridVisible:  false
+                subTickCount: 0
+                tickInterval: 5
+                labelFormat:  "%.0fs"
+            }
+            axisY: ValueAxis {
+                id:           axisY
+                min:          0
+                max:          100
+                tickInterval: 50
+                subTickCount: 0
+                labelFormat:  "%.0f%%"
+            }
+
+            LineSeries {
+                id:    tempSeries
+                width: 2
+                pointDelegate: Rectangle {
+                    width: 6; height: 6; radius: 3
+                    color: root._tempDotColor
+                }
+            }
+            LineSeries {
+                id:    pwrSeries
+                width: 2
+                pointDelegate: Rectangle {
+                    width: 6; height: 6; radius: 3
+                    color: root._pwrDotColor
+                }
+            }
         }
 
-        SensorBar {
-            timeSeries:  root.timeSeries
-            label:       "Power  " + root.pwrMin.toFixed(0) + " – " + root.pwrMax.toFixed(0) + " W"
-            valueKey:    "power"
-            valueMin:    root.pwrMin
-            valueMax:    root.pwrMax
-            normalColor: Constant.gaugePower
+        // ── 범례 ─────────────────────────────────────────────────────────
+        RowLayout {
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 16
+
+            Row {
+                spacing: 5
+                Rectangle { width: 16; height: 2; color: Constant.sensorTemp; anchors.verticalCenter: parent.verticalCenter }
+                Text {
+                    text: "Temp  " + root.tempMin.toFixed(0) + " - " + root.tempMax.toFixed(0) + " C"
+                    color: Constant.sensorTemp; font.pixelSize: 10
+                }
+            }
+            Row {
+                spacing: 5
+                Rectangle { width: 16; height: 2; color: Constant.sensorPower; anchors.verticalCenter: parent.verticalCenter }
+                Text {
+                    text: "Power  " + root.pwrMin.toFixed(0) + " - " + root.pwrMax.toFixed(0) + " W"
+                    color: Constant.sensorPower; font.pixelSize: 10
+                }
+            }
         }
     }
 
@@ -180,14 +198,13 @@ ColumnLayout {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: 20
 
-            // 온도 입력
             Column {
                 id:      tempCol
                 spacing: 6
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text:           "Temperature (°C)"
+                    text:           "Temperature (C)"
                     color:          Constant.logSubText
                     font.pixelSize: 14
                 }
@@ -215,13 +232,12 @@ ColumnLayout {
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text:           root.tempMin.toFixed(0) + " – " + root.tempMax.toFixed(0) + " °C"
+                    text:           root.tempMin.toFixed(0) + " - " + root.tempMax.toFixed(0) + " C"
                     color:          Constant.textLabel
                     font.pixelSize: 11
                 }
             }
 
-            // 전력 입력
             Column {
                 spacing: 6
 
@@ -255,7 +271,7 @@ ColumnLayout {
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text:           root.pwrMin.toFixed(0) + " – " + root.pwrMax.toFixed(0) + " W"
+                    text:           root.pwrMin.toFixed(0) + " - " + root.pwrMax.toFixed(0) + " W"
                     color:          Constant.textLabel
                     font.pixelSize: 11
                 }

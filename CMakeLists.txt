@@ -5,7 +5,7 @@ project(QtFacility VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2 QuickDialogs2 Sql)
+find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2 QuickDialogs2 Sql Graphs)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -81,6 +81,7 @@ target_link_libraries(appQtFacility
     PRIVATE Qt6::QuickControls2
     PRIVATE Qt6::QuickDialogs2
     PRIVATE Qt6::Sql
+    PRIVATE Qt6::Graphs
 )
 
 include(GNUInstallDirs)

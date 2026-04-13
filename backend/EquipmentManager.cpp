@@ -40,6 +40,7 @@ EquipmentManager::EquipmentManager(QObject* parent)
             entry->equipment.healthStatus  = "N/A";
             entry->equipment.controlStatus = "Stopped";
             entry->equipment.imageSource   = img;
+            entry->simulator               = DeviceTimeSeriesSimulator(equipmentOrder_.size());
 
             entry->detector = std::make_unique<AnomalyDetector>();
 
@@ -145,6 +146,7 @@ void EquipmentManager::addEquipment(QString name, QString imageSource)
     entry->equipment.healthStatus  = "N/A";
     entry->equipment.controlStatus = "Stopped";
     entry->equipment.imageSource   = imageSource;
+    entry->simulator               = DeviceTimeSeriesSimulator(equipmentOrder_.size());
 
     entry->detector = std::make_unique<AnomalyDetector>();
 

@@ -99,7 +99,7 @@ Rectangle {
                     id:          btnStartAll
                     width:       (parent.width - 6) / 2
                     height:      parent.height
-                    label:       "▶ All"
+                    label:       "Start All"
                     bold:        true
                     fontSize:    12
                     bgColor:     Constant.ctrlStartBg
@@ -112,7 +112,7 @@ Rectangle {
                     id:        btnStopAll
                     width:     (parent.width - 6) / 2
                     height:    parent.height
-                    label:     "⏹ All"
+                    label:     "Stop All"
                     bold:      true
                     fontSize:  12
                     bgColor:    Constant.ctrlStopBg
