@@ -305,9 +305,8 @@ void EquipmentManager::clearEquipmentStateLogs(QString equipmentId)
 void EquipmentManager::appendStateLog(EquipmentEntry* e, const QString& event,
                                       float temperature, float power)
 {
-    // 소수 1째 자리로 반올림 — 로그와 DB가 항상 동일한 값을 갖도록
-    const float roundedTemp  = std::round(temperature * 10.0f) / 10.0f;
-    const float roundedPower = std::round(power       * 10.0f) / 10.0f;
+    const float roundedTemp  = std::round(temperature);
+    const float roundedPower = std::round(power);
 
     StateLogEntry le;
     le.logId         = nextLogId_++;
