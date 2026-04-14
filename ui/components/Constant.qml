@@ -94,8 +94,8 @@ QtObject {
     readonly property color testModeText:   "#cc88ff"   // Test mode badge text
 
     // ── 센서 포맷 함수 ────────────────────────────────────────────────────
-    function formatTemp(value)  { return value.toFixed(1) + " °C" }
-    function formatPower(value) { return value.toFixed(1) + " W"  }
+    function formatTemp(value)  { return Math.round(value) + " C" }
+    function formatPower(value) { return Math.round(value) + " W" }
 
     // ── 상태 → 색상 변환 함수 ─────────────────────────────────────────────
     // HealthStatus:  "N/A" | "Normal" | "Warning" | "Abnormal"

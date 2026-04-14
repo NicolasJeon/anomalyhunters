@@ -24,11 +24,10 @@ Rectangle {
 
     // ── 인라인 컴포넌트: 삭제(−) 버튼 (세 상태 공통) ───────────────────────
     component DeleteBtn: AppButton {
-        implicitWidth: 22
+        implicitWidth: 44
         implicitHeight: 18
-        label: "−"
-        bold: true
-        fontSize: 14
+        label: "Delete"
+        fontSize: 10
         bgColor:     Constant.ctrlDeleteBg
         hoverColor:  Constant.ctrlDeleteBgHov
         textColor:   Constant.ctrlDeleteText

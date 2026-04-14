@@ -20,6 +20,37 @@ Rectangle {
     border.color: "#22253a"
     border.width: 1
 
+    Shortcut {
+        sequence: "Ctrl+S"
+        onActivated: {
+            if (logList.selectedLog !== null && !(logList.selectedLog["savedToDB"] === true))
+                manualSaveDialog.open()
+        }
+    }
+
+    Shortcut {
+        sequence: "Up"
+        onActivated: {
+            if (logList.logs.length === 0) return
+            const next = logList.selectedIndex <= 0 ? 0 : logList.selectedIndex - 1
+            logList.selectedIndex = next
+            logList.selectedLog   = logList.logs[next]
+            logList.positionViewAtIndex(next, ListView.Contain)
+        }
+    }
+
+    Shortcut {
+        sequence: "Down"
+        onActivated: {
+            if (logList.logs.length === 0) return
+            const next = logList.selectedIndex < 0 ? 0
+                       : Math.min(logList.selectedIndex + 1, logList.logs.length - 1)
+            logList.selectedIndex = next
+            logList.selectedLog   = logList.logs[next]
+            logList.positionViewAtIndex(next, ListView.Contain)
+        }
+    }
+
     onEquipmentIdChanged: {
         logList.selectedIndex = -1
         logList.selectedLog   = null

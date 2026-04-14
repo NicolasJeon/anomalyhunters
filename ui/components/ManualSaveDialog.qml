@@ -22,7 +22,10 @@ Popup {
 
     // ── 팝업 위치·크기 ────────────────────────────────────────────────────────
     modal:            true
+    focus:            true
     anchors.centerIn: Overlay.overlay
+
+    onOpened: saveBtn.forceActiveFocus()
     width:            300
     height:           190
     padding:          0
@@ -78,7 +81,7 @@ Popup {
                 font.pixelSize: 12
             }
             Text {
-                text:           root.temperature.toFixed(1)
+                text:           Math.round(root.temperature)
                 color:          "#e0e0f8"
                 font.pixelSize: 13
                 font.family:    "Courier New"
@@ -90,7 +93,7 @@ Popup {
                 font.pixelSize: 12
             }
             Text {
-                text:           root.power.toFixed(1)
+                text:           Math.round(root.power)
                 color:          "#e0e0f8"
                 font.pixelSize: 13
                 font.family:    "Courier New"
@@ -121,6 +124,7 @@ Popup {
             spacing: 8
 
             AppButton {
+                id:                saveBtn
                 Layout.fillWidth:  true
                 implicitHeight:    30
                 label:             "Save"
@@ -131,13 +135,16 @@ Popup {
                 textColor:         Constant.successText
                 borderColor:       Constant.successBorder
 
-                onClicked: {
+                function doSave() {
                     // qmllint disable unqualified
                     equipmentManager.manualSaveToDb(root.equipmentId, root.logId,
                                                     root.temperature, root.power,
                                                     root.healthStatus)
                     root.close()
                 }
+                onClicked:              doSave()
+                Keys.onReturnPressed:   doSave()
+                Keys.onEnterPressed:    doSave()
             }
 
             AppButton {

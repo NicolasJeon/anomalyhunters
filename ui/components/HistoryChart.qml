@@ -25,10 +25,10 @@ ColumnLayout {
         currentLabel === 2 ? Constant.anomaly :
         currentLabel === 1 ? Constant.warning : Constant.sensorPower
 
-    readonly property real tempMin:  28.0
-    readonly property real tempMax:  70.0
-    readonly property real pwrMin:   40.0
-    readonly property real pwrMax:  120.0
+    readonly property real tempMin:  0
+    readonly property real tempMax:  70
+    readonly property real pwrMin:   0
+    readonly property real pwrMax:  120
 
     signal testToggled()
     signal previewChanged(var series)
@@ -37,14 +37,8 @@ ColumnLayout {
     property real testPower:       55.0
 
     function collectSeries() {
-        // tempInput/pwrInput이 아직 생성 안 됐을 수 있으므로 fallback 처리
-        const t = (typeof tempInput !== "undefined")
-                  ? Math.max(root.tempMin, Math.min(root.tempMax, parseFloat(tempInput.text) || root.testTemperature))
-                  : root.testTemperature
-        const p = (typeof pwrInput !== "undefined")
-                  ? Math.max(root.pwrMin,  Math.min(root.pwrMax,  parseFloat(pwrInput.text)  || root.testPower))
-                  : root.testPower
-        return [{ "temperature": t, "power": p, "label": -1, "abnormalDist": 0 }]
+        return [{ "temperature": root.testTemperature, "power": root.testPower,
+                  "label": -1, "abnormalDist": 0 }]
     }
     function notifyPreview() { previewChanged(collectSeries()) }
 
@@ -226,14 +220,14 @@ ColumnLayout {
                         color:               Constant.sensorTemp
                         font.pixelSize:      22
                         font.family:         "Courier New"
-                        text:                root.testTemperature.toFixed(1)
+                        text:                Math.round(root.testTemperature).toString()
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment:   Text.AlignVCenter
-                        inputMethodHints:    Qt.ImhFormattedNumbersOnly
-                        onEditingFinished: {
-                            var v = Math.max(root.tempMin, Math.min(root.tempMax, parseFloat(text) || root.tempMin))
+                        onTextEdited: {
+                            var v = parseInt(text)
+                            if (isNaN(v)) return
+                            if (v > root.tempMax) { text = root.tempMax.toString(); v = root.tempMax }
                             root.testTemperature = v
-                            text = v.toFixed(1)
                         }
                     }
                 }
@@ -266,14 +260,14 @@ ColumnLayout {
                         color:               Constant.sensorPower
                         font.pixelSize:      22
                         font.family:         "Courier New"
-                        text:                root.testPower.toFixed(1)
+                        text:                Math.round(root.testPower).toString()
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment:   Text.AlignVCenter
-                        inputMethodHints:    Qt.ImhFormattedNumbersOnly
-                        onEditingFinished: {
-                            var v = Math.max(root.pwrMin, Math.min(root.pwrMax, parseFloat(text) || root.pwrMin))
+                        onTextEdited: {
+                            var v = parseInt(text)
+                            if (isNaN(v)) return
+                            if (v > root.pwrMax) { text = root.pwrMax.toString(); v = root.pwrMax }
                             root.testPower = v
-                            text = v.toFixed(1)
                         }
                     }
                 }
