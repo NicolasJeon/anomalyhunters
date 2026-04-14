@@ -10,17 +10,17 @@ DeviceTimeSeriesSimulator::DeviceTimeSeriesSimulator(int seqOffset)
 
 DeviceTimeSeriesSimulator::Sample DeviceTimeSeriesSimulator::next()
 {
-    const int state = SEQ[seqIdx_];
+    const StateSpec& spec = SEQ[seqIdx_];
 
-    float baseTemp = (state == 2) ? TEMP_ABNORMAL
-                   : (state == 1) ? TEMP_WARNING
-                   :                TEMP_NORMAL;
-    float basePwr  = (state == 2) ? PWR_ABNORMAL
-                   : (state == 1) ? PWR_WARNING
-                   :                PWR_NORMAL;
+    float baseTemp = (spec.tempState == 2) ? TEMP_ABNORMAL
+                   : (spec.tempState == 1) ? TEMP_WARNING
+                   :                         TEMP_NORMAL;
+    float basePwr  = (spec.powerState == 2) ? PWR_ABNORMAL
+                   : (spec.powerState == 1) ? PWR_WARNING
+                   :                          PWR_NORMAL;
 
-    const float t = std::clamp(baseTemp + noise_(rng_), 28.0f, 65.0f);
-    const float p = std::clamp(basePwr  + noise_(rng_), 40.0f, 80.0f);
+    const int t = std::clamp(static_cast<int>(std::round(baseTemp + noise_(rng_))), 10, 70);
+    const int p = std::clamp(static_cast<int>(std::round(basePwr  + noise_(rng_))), 10, 100);
 
     // 다음 틱으로 이동
     if (++tickCount_ >= TICKS_PER_STATE) {

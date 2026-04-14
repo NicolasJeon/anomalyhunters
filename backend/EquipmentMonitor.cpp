@@ -14,7 +14,6 @@ EquipmentMonitor::EquipmentMonitor(EquipmentManager& manager, QObject* parent)
 void EquipmentMonitor::startSimulation() { timer_.start(500); }
 void EquipmentMonitor::stopSimulation()  { timer_.stop(); }
 
-// ── tick ──────────────────────────────────────────────────────────────────────
 void EquipmentMonitor::tick()
 {
     bool anyRunning         = false;
@@ -31,8 +30,7 @@ void EquipmentMonitor::tick()
         auto s   = e->simulator.next();
         auto res = e->detector->predict(s.temperature, s.power);
 
-        e->inference.label        = res.label;
-        e->inference.abnormalDist = res.abnormal_dist;
+        e->inference.label = static_cast<int>(res.finalState);
 
         const QString prevHealth = e->prevHealthStatus;
         updateHealthStatus(e->equipment, e->inference);
@@ -43,11 +41,10 @@ void EquipmentMonitor::tick()
         e->prevHealthStatus = e->equipment.healthStatus;
 
         TimeSeriesSample ts;
-        ts.timestampMs  = QDateTime::currentMSecsSinceEpoch();
-        ts.temperature  = s.temperature;
-        ts.power        = s.power;
-        ts.label        = e->inference.label;
-        ts.abnormalDist = res.abnormal_dist;
+        ts.timestampMs = QDateTime::currentMSecsSinceEpoch();
+        ts.temperature = s.temperature;
+        ts.power       = s.power;
+        ts.label       = e->inference.label;
 
         if (e->series.size() >= SERIES_BUFFER)
             e->series.removeFirst();
@@ -63,7 +60,6 @@ void EquipmentMonitor::tick()
     if (selectedLogChanged) emit selectedStateLogsUpdated();
 }
 
-// ── healthStatus 갱신 ─────────────────────────────────────────────────────────
 void EquipmentMonitor::updateHealthStatus(Equipment& eq, const InferenceState& inf)
 {
     if      (inf.label == -1) eq.healthStatus = "N/A";
@@ -72,7 +68,6 @@ void EquipmentMonitor::updateHealthStatus(Equipment& eq, const InferenceState& i
     else                      eq.healthStatus = "Abnormal";
 }
 
-// ── runTestSeries ─────────────────────────────────────────────────────────────
 void EquipmentMonitor::runTestSeries(const QString& equipmentId, const QVariantList& series)
 {
     EquipmentManager::EquipmentEntry* e = manager_.entryFor(equipmentId);
@@ -87,23 +82,20 @@ void EquipmentMonitor::runTestSeries(const QString& equipmentId, const QVariantL
 
     for (int i = 0; i < n; ++i) {
         const QVariantMap row  = series[i].toMap();
-        const float temp  = row.value("temperature").toFloat();
-        const float power = row.value("power").toFloat();
+        const int temp  = row.value("temperature").toInt();
+        const int power = row.value("power").toInt();
 
         lastResult = e->detector->predict(temp, power);
 
         TimeSeriesSample ts;
-        ts.timestampMs  = now - static_cast<qint64>(n - 1 - i) * 1000;
-        ts.temperature  = temp;
-        ts.power        = power;
-        ts.label        = lastResult.label;
-        ts.abnormalDist = lastResult.abnormal_dist;
+        ts.timestampMs = now - static_cast<qint64>(n - 1 - i) * 1000;
+        ts.temperature = temp;
+        ts.power       = power;
+        ts.label       = static_cast<int>(lastResult.finalState);
         e->series.append(ts);
     }
 
-    e->inference.label        = lastResult.label;
-    e->inference.abnormalDist = lastResult.abnormal_dist;
-
+    e->inference.label = static_cast<int>(lastResult.finalState);
     updateHealthStatus(e->equipment, e->inference);
 
     emit equipmentUpdated();
@@ -114,7 +106,6 @@ void EquipmentMonitor::runTestSeries(const QString& equipmentId, const QVariantL
     }
 }
 
-// ── clearEquipmentDisplay ─────────────────────────────────────────────────────
 void EquipmentMonitor::clearEquipmentDisplay(const QString& equipmentId)
 {
     EquipmentManager::EquipmentEntry* e = manager_.entryFor(equipmentId);

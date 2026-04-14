@@ -7,27 +7,23 @@
 // ── TimeSeriesSample ─────────────────────────────────────────────────────────
 struct TimeSeriesSample {
     qint64 timestampMs  = 0;
-    float  temperature  = 0.f;
-    float  power        = 0.f;
-    // 추론 결과도 함께 저장해 히스토리 바 색상에 사용
+    int    temperature  = 0;
+    int    power        = 0;
     int    label        = -1;
-    float  abnormalDist = 0.f;   // 0.0 ~ 1.0
 
     QVariantMap toVariantMap() const {
         return {
             { "timestampMs",  timestampMs  },
             { "temperature",  temperature  },
             { "power",        power        },
-            { "label",        label        },
-            { "abnormalDist", abnormalDist }
+            { "label",        label        }
         };
     }
 };
 
 // ── InferenceState ───────────────────────────────────────────────────────────
 struct InferenceState {
-    int     label        = -1;
-    float   abnormalDist = 0.f;   // 0.0 ~ 1.0
+    int     label = -1;
 
     QString statusText() const {
         if (label == -1) return QStringLiteral("N/A");
@@ -38,22 +34,21 @@ struct InferenceState {
 
     QVariantMap toVariantMap() const {
         return {
-            { "label",        label        },
-            { "abnormalDist", abnormalDist },
-            { "statusText",   statusText() }
+            { "label",      label        },
+            { "statusText", statusText() }
         };
     }
 };
 
 // ── StateLogEntry ─────────────────────────────────────────────────────────────
 struct StateLogEntry {
-    quint64 logId         = 0;   // session-scoped unique ID (not persisted to DB)
+    quint64 logId         = 0;
     qint64  timestampMs   = 0;
-    QString event;        // "start" | "stop" | "health_change"
+    QString event;
     QString healthStatus;
     QString controlStatus;
-    float   temperature   = 0.f;
-    float   power         = 0.f;
+    int     temperature   = 0;
+    int     power         = 0;
     bool    savedToDB     = false;
 
     QVariantMap toVariantMap() const {
@@ -74,8 +69,8 @@ struct StateLogEntry {
 struct Equipment {
     QString id;
     QString name;
-    QString healthStatus;    // N/A | Normal | Warning | Abnormal
-    QString controlStatus;   // Stopped | Running
+    QString healthStatus;
+    QString controlStatus;
     QString imageSource;
 
     QVariantMap toVariantMap() const {

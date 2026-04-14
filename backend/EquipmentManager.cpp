@@ -1,18 +1,14 @@
 #include "EquipmentManager.h"
 #include "EquipmentMonitor.h"
 
-#include <cmath>
-
 #include <QDateTime>
 
-// ── 소멸자 ────────────────────────────────────────────────────────────────────
 EquipmentManager::~EquipmentManager() = default;
 
-// ── 생성자 ────────────────────────────────────────────────────────────────────
 EquipmentManager::EquipmentManager(QObject* parent)
     : QObject(parent)
 {
-    // DB에서 장비 목록 로드, 없으면 기본값 삽입
+    // Load from DB; seed defaults if empty
     const QVariantList saved = DatabaseManager::instance().loadEquipment();
     if (saved.isEmpty()) {
         addEquipment("Air Circulator", "qrc:/qt/qml/QtFacility/images/air_circulator.png");
@@ -27,7 +23,7 @@ EquipmentManager::EquipmentManager(QObject* parent)
             const QString name  = m["name"].toString();
             const QString img   = m["imageSource"].toString();
 
-            // nextEquipmentNum_ 복원 — "devN" 형식에서 N 추출
+            // Restore nextEquipmentNum_ from "devN" id format
             const QString suffix = id.mid(3);
             bool ok = false;
             const int num = suffix.toInt(&ok);
@@ -41,8 +37,7 @@ EquipmentManager::EquipmentManager(QObject* parent)
             entry->equipment.controlStatus = "Stopped";
             entry->equipment.imageSource   = img;
             entry->simulator               = DeviceTimeSeriesSimulator(equipmentOrder_.size());
-
-            entry->detector = std::make_unique<AnomalyDetector>();
+            entry->detector                = std::make_unique<AnomalyDetector>();
 
             equipmentOrder_.append(id);
             entries_.emplace(id, std::move(entry));
@@ -50,7 +45,7 @@ EquipmentManager::EquipmentManager(QObject* parent)
         emit equipmentChanged();
     }
 
-    // EquipmentMonitor 생성 및 signal 연결
+    // Create monitor and wire signals
     monitor_ = std::make_unique<EquipmentMonitor>(*this);
     connect(monitor_.get(), &EquipmentMonitor::equipmentUpdated,
             this, &EquipmentManager::equipmentChanged);
@@ -63,14 +58,13 @@ EquipmentManager::EquipmentManager(QObject* parent)
     connect(monitor_.get(), &EquipmentMonitor::selectedStateLogsUpdated,
             this, &EquipmentManager::selectedStateLogsChanged);
 
-    // 첫 번째 장비 자동 시작 + 선택
+    // Auto-start and select first equipment
     if (!equipmentOrder_.isEmpty()) {
         startEquipment(equipmentOrder_.first());
         setSelectedEquipmentId(equipmentOrder_.first());
     }
 }
 
-// ── Property accessors ────────────────────────────────────────────────────────
 QVariantList EquipmentManager::equipment() const
 {
     QVariantList list;
@@ -106,7 +100,7 @@ QVariantList EquipmentManager::selectedTimeSeries() const
 QVariantMap EquipmentManager::selectedInference() const
 {
     const EquipmentEntry* e = entryFor(selectedEquipmentId_);
-    if (!e) return {{"label", -1}, {"abnormalDist", 0.f}, {"statusText", "No Equipment"}};
+    if (!e) return {{"label", -1}, {"statusText", "No Equipment"}};
     return e->inference.toVariantMap();
 }
 
@@ -132,7 +126,6 @@ void EquipmentManager::setSelectedEquipmentId(const QString& id)
     emit selectedStateLogsChanged();
 }
 
-// ── CRUD ──────────────────────────────────────────────────────────────────────
 void EquipmentManager::addEquipment(QString name, QString imageSource)
 {
     if (name.isEmpty())
@@ -147,14 +140,12 @@ void EquipmentManager::addEquipment(QString name, QString imageSource)
     entry->equipment.controlStatus = "Stopped";
     entry->equipment.imageSource   = imageSource;
     entry->simulator               = DeviceTimeSeriesSimulator(equipmentOrder_.size());
-
-    entry->detector = std::make_unique<AnomalyDetector>();
+    entry->detector                = std::make_unique<AnomalyDetector>();
 
     equipmentOrder_.append(id);
     entries_.emplace(id, std::move(entry));
 
     DatabaseManager::instance().saveNewEquipment(id, name, imageSource);
-
     emit equipmentChanged();
 }
 
@@ -193,7 +184,6 @@ void EquipmentManager::updateEquipment(QString equipmentId, QString name, QStrin
         emit selectedEquipmentChanged();
 }
 
-// ── Control ───────────────────────────────────────────────────────────────────
 void EquipmentManager::startEquipment(QString equipmentId)
 {
     EquipmentEntry* e = entryFor(equipmentId);
@@ -201,8 +191,8 @@ void EquipmentManager::startEquipment(QString equipmentId)
 
     e->equipment.controlStatus = "Running";
 
-    const float curTemp  = e->series.isEmpty() ? 0.f : e->series.last().temperature;
-    const float curPower = e->series.isEmpty() ? 0.f : e->series.last().power;
+    const int curTemp  = e->series.isEmpty() ? 0 : e->series.last().temperature;
+    const int curPower = e->series.isEmpty() ? 0 : e->series.last().power;
 
     appendStateLog(e, "start", curTemp, curPower);
 
@@ -220,15 +210,15 @@ void EquipmentManager::stopEquipment(QString equipmentId)
 
     e->equipment.controlStatus = "Stopped";
 
-    const float stopTemp  = e->series.isEmpty() ? 0.f : e->series.last().temperature;
-    const float stopPower = e->series.isEmpty() ? 0.f : e->series.last().power;
+    const int stopTemp  = e->series.isEmpty() ? 0 : e->series.last().temperature;
+    const int stopPower = e->series.isEmpty() ? 0 : e->series.last().power;
 
     appendStateLog(e, "stop", stopTemp, stopPower);
 
     e->equipment.healthStatus = "N/A";
     e->prevHealthStatus       = "N/A";
     e->series.clear();
-    e->inference  = InferenceState{};
+    e->inference = InferenceState{};
 
     emit equipmentChanged();
     if (equipmentId == selectedEquipmentId_) {
@@ -239,21 +229,12 @@ void EquipmentManager::stopEquipment(QString equipmentId)
     }
 }
 
-void EquipmentManager::startAll()
-{
-    for (const QString& id : equipmentOrder_) startEquipment(id);
-}
+void EquipmentManager::startAll() { for (const QString& id : equipmentOrder_) startEquipment(id); }
+void EquipmentManager::stopAll()  { for (const QString& id : equipmentOrder_) stopEquipment(id); }
 
-void EquipmentManager::stopAll()
-{
-    for (const QString& id : equipmentOrder_) stopEquipment(id);
-}
-
-// ── Simulation speed (EquipmentMonitor에 위임) ────────────────────────────────
 void EquipmentManager::startSimulation() { monitor_->startSimulation(); }
 void EquipmentManager::stopSimulation()  { monitor_->stopSimulation(); }
 
-// ── Test with Data (EquipmentMonitor에 위임) ──────────────────────────────────
 void EquipmentManager::runTestSeries(QString equipmentId, QVariantList series)
 {
     monitor_->runTestSeries(equipmentId, series);
@@ -264,14 +245,13 @@ void EquipmentManager::clearEquipmentDisplay(QString equipmentId)
     monitor_->clearEquipmentDisplay(equipmentId);
 }
 
-// ── DB ────────────────────────────────────────────────────────────────────────
 QVariantList EquipmentManager::queryEquipmentStateLogs(const QString& equipmentId, int limit) const
 {
     return DatabaseManager::instance().queryStateEvents(equipmentId, limit);
 }
 
 void EquipmentManager::manualSaveToDb(QString equipmentId, quint64 logId,
-                                      float temperature, float power,
+                                      int temperature, int power,
                                       QString healthStatus)
 {
     EquipmentEntry* e = entryFor(equipmentId);
@@ -301,21 +281,17 @@ void EquipmentManager::clearEquipmentStateLogs(QString equipmentId)
     DatabaseManager::instance().clearEquipmentEvents(equipmentId);
 }
 
-// ── 내부 헬퍼 ─────────────────────────────────────────────────────────────────
 void EquipmentManager::appendStateLog(EquipmentEntry* e, const QString& event,
-                                      float temperature, float power)
+                                      int temperature, int power)
 {
-    const float roundedTemp  = std::round(temperature);
-    const float roundedPower = std::round(power);
-
     StateLogEntry le;
     le.logId         = nextLogId_++;
     le.timestampMs   = QDateTime::currentMSecsSinceEpoch();
     le.event         = event;
     le.healthStatus  = e->equipment.healthStatus;
     le.controlStatus = e->equipment.controlStatus;
-    le.temperature   = roundedTemp;
-    le.power         = roundedPower;
+    le.temperature   = temperature;
+    le.power         = power;
 
     if (e->stateLog.size() >= LOG_BUFFER)
         e->stateLog.removeFirst();

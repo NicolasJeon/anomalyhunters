@@ -3,9 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtFacility
 
-// 상태 변화 로그 패널 (인메모리 실시간 로그)
-// logs: QVariantList — { timestampMs, event, healthStatus, controlStatus,
-//                        prevTemperature, prevPower, temperature, power, savedToDB }
+// In-memory runtime state log panel
 Rectangle {
     id: root
 
@@ -57,14 +55,12 @@ Rectangle {
         logList._trackLogId   = undefined
     }
 
-    // ── DB 로그 팝업 ─────────────────────────────────────────────────────────
     StateLogDialog {
         id: dbDialog
         equipmentId:   root.equipmentId
         equipmentName: root.equipmentName
     }
 
-    // ── 수동 DB 저장 팝업 ────────────────────────────────────────────────────
     ManualSaveDialog {
         id: manualSaveDialog
         equipmentId:   root.equipmentId
@@ -87,7 +83,6 @@ Rectangle {
         }
         spacing: 6
 
-        // ── 헤더 ──────────────────────────────────────────────────────────────
         RowLayout {
             Layout.fillWidth: true
             spacing: 6
@@ -105,7 +100,6 @@ Rectangle {
 
             Item { Layout.fillWidth: true }
 
-            // DB 저장 버튼
             AppButton {
                 implicitWidth:  52
                 implicitHeight: 18
@@ -122,7 +116,6 @@ Rectangle {
                 onClicked:   manualSaveDialog.open()
             }
 
-            // DB 로그 조회 버튼
             AppButton {
                 implicitWidth:  46
                 implicitHeight: 18
@@ -136,7 +129,6 @@ Rectangle {
             }
         }
 
-        // ── 로그 목록 ─────────────────────────────────────────────────────────
         StateLogList {
             id:                logList
             Layout.fillWidth:  true

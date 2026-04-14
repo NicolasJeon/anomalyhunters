@@ -9,8 +9,8 @@
 
 class EquipmentManager;
 
-// 실시간 처리 — 1초 tick, 시뮬레이션, ONNX 추론, healthStatus 갱신
-// EquipmentManager가 소유하며 QML에 직접 노출되지 않는다.
+// Real-time processor: 1s tick, simulation, inference, healthStatus update
+// Owned by EquipmentManager; not exposed to QML.
 class EquipmentMonitor : public QObject
 {
     Q_OBJECT

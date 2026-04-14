@@ -16,9 +16,9 @@
 
 class EquipmentMonitor;
 
-// 앱의 핵심 백엔드 — 장비 데이터 소유, CRUD·제어·상태로그 담당
-// QML에는 equipmentManager (context property) 로 노출된다.
-// 실시간 추론/시뮬레이션은 EquipmentMonitor에 위임한다.
+// Core backend — owns equipment data, handles CRUD/control/state-log
+// Exposed to QML as context property "equipmentManager"
+// Real-time inference/simulation delegated to EquipmentMonitor
 class EquipmentManager : public QObject
 {
     Q_OBJECT
@@ -43,8 +43,8 @@ class EquipmentManager : public QObject
                READ selectedStateLogs NOTIFY selectedStateLogsChanged)
 
 public:
-    // 장비 1개의 모든 런타임 데이터
-    // EquipmentMonitor도 이 struct에 접근한다 (EquipmentManager::EquipmentEntry).
+    // All runtime data for a single equipment unit
+    // Also accessed by EquipmentMonitor
     struct EquipmentEntry {
         Equipment                        equipment;
         DeviceTimeSeriesSimulator        simulator;
@@ -58,7 +58,7 @@ public:
     explicit EquipmentManager(QObject* parent = nullptr);
     ~EquipmentManager();
 
-    // ── Property read ──────────────────────────────────────────────────────
+    // Property accessors
     QVariantList equipment()           const;
     QString      selectedEquipmentId() const { return selectedEquipmentId_; }
     QVariantMap  selectedEquipment()   const;
@@ -68,40 +68,40 @@ public:
 
     void setSelectedEquipmentId(const QString& id);
 
-    // ── Equipment CRUD ─────────────────────────────────────────────────────
+    // Equipment CRUD
     Q_INVOKABLE void addEquipment(QString name,
                                   QString imageSource = QString{});
     Q_INVOKABLE void removeEquipment(QString equipmentId);
     Q_INVOKABLE void updateEquipment(QString equipmentId, QString name,
                                      QString imageSource);
 
-    // ── Control ────────────────────────────────────────────────────────────
+    // Control
     Q_INVOKABLE void startEquipment(QString equipmentId);
     Q_INVOKABLE void stopEquipment(QString equipmentId);
     Q_INVOKABLE void startAll();
     Q_INVOKABLE void stopAll();
 
-    // ── Simulation speed ───────────────────────────────────────────────────
+    // Simulation speed
     Q_INVOKABLE void startSimulation();
     Q_INVOKABLE void stopSimulation();
 
-    // ── Test with Data (EquipmentMonitor에 위임) ───────────────────────────
+    // Test with Data (delegated to EquipmentMonitor)
     Q_INVOKABLE void runTestSeries(QString equipmentId, QVariantList series);
     Q_INVOKABLE void clearEquipmentDisplay(QString equipmentId);
 
-    // ── DB ─────────────────────────────────────────────────────────────────
+    // DB
     Q_INVOKABLE QVariantList queryEquipmentStateLogs(const QString& equipmentId,
                                                      int limit = 200) const;
     Q_INVOKABLE void manualSaveToDb(QString equipmentId, quint64 logId,
-                                    float temperature, float power,
+                                    int temperature, int power,
                                     QString healthStatus);
     Q_INVOKABLE void clearEquipmentStateLogs(QString equipmentId);
 
-    // ── EquipmentMonitor 접근용 ────────────────────────────────────────────
+    // EquipmentMonitor access
     EquipmentEntry*    entryFor(const QString& id) const;
     const QStringList& equipmentOrder()            const { return equipmentOrder_; }
     void appendStateLog(EquipmentEntry* e, const QString& event,
-                        float temperature, float power);
+                        int temperature, int power);
 
 signals:
     void equipmentChanged();

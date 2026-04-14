@@ -2,23 +2,22 @@ import QtQuick
 import QtQuick.Layouts
 import QtFacility
 
-// 통합 상태 카드 — 상태+게이지 한 줄 / 센서 수치
+// Combined status card: health status + sensor values with vertical bars
 Rectangle {
     id: root
 
     property string controlStatus: "Stopped"
     property int    label:         -1
     property string statusText:    "—"
-    property real   abnormalDist:  0.0
     property bool   hasData:       false
     property real   temperature:   0.0
     property real   power:         0.0
     property bool   testMode:      false
 
-    // 폰트 스케일 — 카드 너비 450px 기준, 창 크기에 따라 비례
+    // Font scale: normalized to 450px card width
     readonly property real _fs: Math.max(0.55, Math.min(1.4, root.width / 450))
 
-    // 애니메이션용 표시값 — 실제값으로 부드럽게 보간
+    // Animated display values
     property real _dispTemp:  0.0
     property real _dispPower: 0.0
 
@@ -32,25 +31,34 @@ Rectangle {
     radius: 6
     color: Constant.bgCard
 
+    // Overall health color (based on finalState label)
     readonly property color _statusColor: {
-        if (root.controlStatus === "Stopped" && !root.testMode)  return Constant.stopped
+        if (root.controlStatus === "Stopped" && !root.testMode) return Constant.stopped
         if (root.label === -1) return Constant.waiting
         if (root.label ===  0) return Constant.normal
         if (root.label ===  1) return Constant.warning
         return Constant.anomaly
     }
 
-    readonly property color _rightBarColor:
-        root.label === 1 ? Constant.warning : Constant.gaugeAbnormal
+    // Per-sensor state colors (independent thresholds)
+    readonly property color _tempStateColor: {
+        if (!root.hasData) return Constant.waiting
+        if (root._dispTemp >= 50) return Constant.anomaly
+        if (root._dispTemp >= 40) return Constant.warning
+        return Constant.normal
+    }
+    readonly property color _pwrStateColor: {
+        if (!root.hasData) return Constant.waiting
+        if (root._dispPower >= 90) return Constant.anomaly
+        if (root._dispPower >= 60) return Constant.warning
+        return Constant.sensorPower
+    }
 
     ColumnLayout {
-        anchors {
-            fill: parent
-            margins: 12
-        }
+        anchors { fill: parent; margins: 12 }
         spacing: 10
 
-        // ── ① 상태 텍스트 ─────────────────────────────────────────────────
+        // Health status row
         ColumnLayout {
             spacing: 4
             RowLayout {
@@ -76,9 +84,7 @@ Rectangle {
             RowLayout {
                 spacing: 8
                 Rectangle {
-                    implicitWidth: 10
-                    implicitHeight: 10
-                    radius: 5
+                    implicitWidth: 10; implicitHeight: 10; radius: 5
                     color: root._statusColor
                     Behavior on color { ColorAnimation { duration: 250 } }
                 }
@@ -94,82 +100,76 @@ Rectangle {
             }
         }
 
-        // ── ② Abnormal 근접도 게이지 ─────────────────────────────────────
-        Text { text: "Abnormal Proximity"; color: Constant.textLabel; font.pixelSize: 16 * root._fs }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Constant.border }
 
+        // Sensor values with vertical state bars
         RowLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: 16
 
-            Rectangle {
+            // Temperature
+            RowLayout {
                 Layout.fillWidth: true
-                implicitHeight: 10
-                radius: 3
-                color: Constant.gaugeBg
+                spacing: 8
 
+                // Vertical bar (max 60 C)
                 Rectangle {
-                    anchors.left: parent.left
-                    width: parent.width * root.abnormalDist
-                    height: parent.height
-                    radius: 3
-                    color: root._statusColor
-                    Behavior on width { NumberAnimation { duration: 200 } }
-                    Behavior on color { ColorAnimation { duration: 250 } }
+                    implicitWidth: 8; implicitHeight: 50; radius: 4
+                    color: Constant.gaugeBg
+                    clip: true
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        width: parent.width
+                        height: parent.height * Math.min(root._dispTemp / 60.0, 1.0)
+                        radius: 4
+                        color: root._tempStateColor
+                        Behavior on height { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+                        Behavior on color  { ColorAnimation  { duration: 250 } }
+                    }
+                }
+
+                ColumnLayout {
+                    spacing: 2
+                    Text { text: "Temperature"; color: Constant.textLabel; font.pixelSize: 15 * root._fs; elide: Text.ElideRight }
+                    Text {
+                        text: root.hasData ? Constant.formatTemp(root._dispTemp) : "—"
+                        color: Constant.sensorTemp
+                        font.pixelSize: 19 * root._fs; font.bold: true; elide: Text.ElideRight
+                    }
                 }
             }
 
-            Text {
-                text: root.label === -1 ? "—" : (root.abnormalDist * 100).toFixed(0) + "%"
-                color: root._statusColor
-                font.pixelSize: 16 * root._fs
-                font.bold: true
-                Behavior on color { ColorAnimation { duration: 250 } }
+            // Power
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                // Vertical bar (max 100 W)
+                Rectangle {
+                    implicitWidth: 8; implicitHeight: 50; radius: 4
+                    color: Constant.gaugeBg
+                    clip: true
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        width: parent.width
+                        height: parent.height * Math.min(root._dispPower / 100.0, 1.0)
+                        radius: 4
+                        color: root._pwrStateColor
+                        Behavior on height { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+                        Behavior on color  { ColorAnimation  { duration: 250 } }
+                    }
+                }
+
+                ColumnLayout {
+                    spacing: 2
+                    Text { text: "Power"; color: Constant.textLabel; font.pixelSize: 15 * root._fs; elide: Text.ElideRight }
+                    Text {
+                        text: root.hasData ? Constant.formatPower(root._dispPower) : "—"
+                        color: Constant.sensorPower
+                        font.pixelSize: 19 * root._fs; font.bold: true; elide: Text.ElideRight
+                    }
+                }
             }
         }
-
-        // ── 구분선 ────────────────────────────────────────────────────────
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Constant.border }
-
-        // ── ③ 센서 수치 ───────────────────────────────────────────────────
-        GridLayout {
-            Layout.fillWidth: true
-            columns: 2
-            columnSpacing: 0
-            rowSpacing: 4
-
-            Text {
-                text: "Temperature"
-                color: Constant.textLabel
-                font.pixelSize: 15 * root._fs
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-            }
-            Text {
-                text: "Power"
-                color: Constant.textLabel
-                font.pixelSize: 15 * root._fs
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-            }
-
-            Text {
-                text: root.hasData ? Constant.formatTemp(root._dispTemp) : "—"
-                color: Constant.sensorTemp
-                font.pixelSize: 19 * root._fs
-                font.bold: true
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-            }
-            Text {
-                text: root.hasData ? Constant.formatPower(root._dispPower) : "—"
-                color: Constant.sensorPower
-                font.pixelSize: 19 * root._fs
-                font.bold: true
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-            }
-        }
-
     }
-
 }

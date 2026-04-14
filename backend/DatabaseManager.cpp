@@ -28,7 +28,7 @@ bool DatabaseManager::init(const QString& path)
     pragma.exec("PRAGMA journal_mode=DELETE");
     pragma.exec("PRAGMA synchronous=FULL");
 
-    // Schema migration: drop state_events if it has legacy columns or wrong column types
+    // Schema migration: recreate state_events if legacy columns detected
     {
         QSqlQuery check;
         check.exec("PRAGMA table_info(state_events)");
@@ -51,7 +51,7 @@ bool DatabaseManager::init(const QString& path)
         }
     }
 
-    // ── devices 테이블 ──────────────────────────────────────────────────────
+    // devices table
     {
         QSqlQuery q;
         q.exec(R"(
@@ -64,7 +64,7 @@ bool DatabaseManager::init(const QString& path)
         )");
     }
 
-    // ── state_events 테이블 ─────────────────────────────────────────────────
+    // state_events table
     QSqlQuery q;
     const bool ok = q.exec(R"(
         CREATE TABLE IF NOT EXISTS state_events (
@@ -203,13 +203,13 @@ void DatabaseManager::insertStateEvent(
     const QString& equipmentName,
     const QString& state,
     const QString& controlStatus,
-    float temperature,
-    float power,
+    int temperature,
+    int power,
     qint64 timestampMs)
 {
     if (!initialized_) return;
 
-    // 날짜: "YYYY-MM-DD HH:MM:SS" 형식으로 저장
+    // format: "YYYY-MM-DD HH:MM:SS"
     const QString recordedAt = QDateTime::fromMSecsSinceEpoch(timestampMs)
                                    .toString("yyyy-MM-dd HH:mm:ss");
 

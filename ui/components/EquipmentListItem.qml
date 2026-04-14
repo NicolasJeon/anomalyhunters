@@ -2,8 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtFacility
 
-// 장비 목록 아이템 — 썸네일 / 이름·상태 / 상태별 제어 버튼
-// controlStatus: "Stopped" | "Running"
+// Equipment list item: thumbnail / name+status / control buttons
 Rectangle {
     id: root
 
@@ -15,14 +14,11 @@ Rectangle {
     signal stopRequested()
     signal deleteRequested()
 
-    // ── 편의 속성 (반복 참조 단축) ─────────────────────────────────────────
     readonly property string controlStatus: equipmentData["controlStatus"] ?? "Stopped"
     readonly property string healthStatus:  equipmentData["healthStatus"]  ?? "Normal"
 
-    // healthStatus → 표시 색상 (Constant.healthColor 위임)
     function healthColor(status) { return Constant.healthColor(status) }
 
-    // ── 인라인 컴포넌트: 삭제(−) 버튼 (세 상태 공통) ───────────────────────
     component DeleteBtn: AppButton {
         implicitWidth: 44
         implicitHeight: 18
@@ -38,10 +34,9 @@ Rectangle {
     height: 76
     color: root.isSelected ? Constant.selectionBg : Constant.bgPanel
 
-    // 선택 표시 바
+    // Selection indicator bar
     Rectangle { width: 3; height: parent.height; color: root.isSelected ? Constant.focusAccent : "transparent" }
 
-    // 하단 구분선
     Rectangle {
         anchors.bottom: parent.bottom
         width: parent.width
@@ -61,23 +56,12 @@ Rectangle {
         }
         spacing: 8
 
-        // ── 썸네일 ────────────────────────────────────────────────────────
+        // Thumbnail: image + bottom-right status dot
         Item {
             implicitWidth: 36
             implicitHeight: 36
             Layout.alignment: Qt.AlignVCenter
 
-            // 이미지 없을 때: 상태 도트
-            Rectangle {
-                anchors.centerIn: parent
-                width: 10
-                height: 10
-                radius: 5
-                color: root.healthColor(root.healthStatus)
-                visible: false
-            }
-
-            // 이미지 있을 때: 이미지 + 우하단 상태 도트
             Rectangle {
                 anchors.fill: parent
                 radius: 4
@@ -111,7 +95,6 @@ Rectangle {
             }
         }
 
-        // ── 이름 / 상태 / 제어 버튼 ───────────────────────────────────────
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -133,7 +116,6 @@ Rectangle {
                 Layout.fillWidth: true
             }
 
-            // Stopped → [Start] ··· [−]
             RowLayout {
                 Layout.fillWidth: true
                 visible: root.controlStatus === "Stopped"
@@ -152,7 +134,6 @@ Rectangle {
                 DeleteBtn {}
             }
 
-            // Running → [Stop] ··· [−]
             RowLayout {
                 Layout.fillWidth: true
                 visible: root.controlStatus === "Running"

@@ -3,27 +3,29 @@ import QtQuick.Layouts
 import QtGraphs
 import QtFacility
 
-// 히스토리 라인 그래프 (Normal 모드) + Test with Data 입력 (Test 모드) 통합
+// History line chart (Normal mode) + Test with Data input (Test mode)
 ColumnLayout {
     id: root
 
-    // ── 속성 ───────────────────────────────────────────────────────────────
     property var    timeSeries:  []
     property bool   canTest:     false
     property bool   testMode:    false
     property string equipmentId: ""
 
-    readonly property int currentLabel: {
-        if (timeSeries.length === 0) return -1
-        return timeSeries[timeSeries.length - 1]["label"] ?? -1
-    }
-    readonly property color _tempDotColor:
-        currentLabel === 2 ? Constant.anomaly :
-        currentLabel === 1 ? Constant.warning : Constant.sensorTemp
+    readonly property var _last: timeSeries.length > 0 ? timeSeries[timeSeries.length - 1] : null
 
-    readonly property color _pwrDotColor:
-        currentLabel === 2 ? Constant.anomaly :
-        currentLabel === 1 ? Constant.warning : Constant.sensorPower
+    readonly property color _tempColor: {
+        const t = _last ? (_last["temperature"] ?? 0) : 0
+        if (t >= 50) return Constant.anomaly
+        if (t >= 40) return Constant.warning
+        return Constant.sensorTemp
+    }
+    readonly property color _pwrColor: {
+        const p = _last ? (_last["power"] ?? 0) : 0
+        if (p >= 90) return Constant.anomaly
+        if (p >= 60) return Constant.warning
+        return Constant.sensorPower
+    }
 
     readonly property real tempMin:  0
     readonly property real tempMax:  70
@@ -37,8 +39,7 @@ ColumnLayout {
     property real testPower:       55.0
 
     function collectSeries() {
-        return [{ "temperature": root.testTemperature, "power": root.testPower,
-                  "label": -1, "abnormalDist": 0 }]
+        return [{ "temperature": root.testTemperature, "power": root.testPower, "label": -1 }]
     }
     function notifyPreview() { previewChanged(collectSeries()) }
 
@@ -56,15 +57,13 @@ ColumnLayout {
             pwrSeries.append(sec, _norm(ts[i]["power"]        ?? root.pwrMin,  root.pwrMin,  root.pwrMax))
         }
         const rawMax = ((ts[ts.length - 1]["timestampMs"] ?? 0) - t0) / 1000.0
-        const xMax = Math.max(10, Math.ceil(rawMax / 5) * 5)
-        axisX.max = xMax
+        axisX.max = Math.max(10, Math.ceil(rawMax / 5) * 5)
     }
 
     onTimeSeriesChanged: _updateSeries()
 
     spacing: 6
 
-    // ── 헤더 행 ────────────────────────────────────────────────────────────
     RowLayout {
         Layout.fillWidth: true
         spacing: 6
@@ -104,7 +103,7 @@ ColumnLayout {
         }
     }
 
-    // ── Normal 모드: 통합 그래프 ───────────────────────────────────────────
+    // Normal mode: combined chart
     ColumnLayout {
         visible:          !root.testMode
         Layout.fillWidth: true
@@ -125,7 +124,7 @@ ColumnLayout {
                 gridVisible:               false
                 labelFont.pixelSize:       10
                 labelTextColor:            Constant.textMuted
-                seriesColors:              [Constant.sensorTemp, Constant.sensorPower]
+                seriesColors: [Constant.sensorTemp, Constant.sensorPower]
             }
 
             axisX: ValueAxis {
@@ -151,7 +150,7 @@ ColumnLayout {
                 width: 2
                 pointDelegate: Rectangle {
                     width: 6; height: 6; radius: 3
-                    color: root._tempDotColor
+                    color: root._tempColor
                 }
             }
             LineSeries {
@@ -159,12 +158,11 @@ ColumnLayout {
                 width: 2
                 pointDelegate: Rectangle {
                     width: 6; height: 6; radius: 3
-                    color: root._pwrDotColor
+                    color: root._pwrColor
                 }
             }
         }
 
-        // ── 범례 ─────────────────────────────────────────────────────────
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
             spacing: 16
@@ -188,7 +186,7 @@ ColumnLayout {
         }
     }
 
-    // ── Test 모드: 단일 샘플 입력 ─────────────────────────────────────────
+    // Test mode: single sample input
     Item {
         visible:          root.testMode
         Layout.fillWidth: true
