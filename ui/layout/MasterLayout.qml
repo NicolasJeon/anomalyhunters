@@ -1,7 +1,7 @@
 import QtQuick
 import "../components"
 
-// 좌측 MASTER 레이아웃 — 로직/글루 전용
+// Master panel — logic glue
 // qmllint disable unqualified
 MasterLayoutForm {
     id: root
@@ -9,12 +9,28 @@ MasterLayoutForm {
     equipment:           equipmentManager.equipment
     selectedEquipmentId: equipmentManager.selectedEquipmentId
 
-    // ── 헤더 버튼 ─────────────────────────────────────────────────────────
-    btnAdd.onClicked:      equipmentDialog.open("", "", "")
+    // ── status counts ──
+    readonly property var _counts: {
+        let n = 0, w = 0, a = 0
+        for (const eq of equipment) {
+            const h = eq["healthStatus"] ?? ""
+            if      (h === "Normal")   n++
+            else if (h === "Warning")  w++
+            else if (h === "Abnormal") a++
+        }
+        return { normal: n, warning: w, abnormal: a }
+    }
+    countTotal:    equipment.length
+    countNormal:   _counts.normal
+    countWarning:  _counts.warning
+    countAbnormal: _counts.abnormal
+
+    // ── header buttons ──
+    btnAdd.onClicked:      equipmentDialog.open("", "", "", "")
     btnStartAll.onClicked: equipmentManager.startAll()
     btnStopAll.onClicked:  equipmentManager.stopAll()
 
-    // ── 장비 목록 delegate — 시그널 글루 포함 ──────────────────────────────
+    // ── list delegate ──
     equipmentList.delegate: EquipmentListItem {
         required property var modelData
         width:         ListView.view.width

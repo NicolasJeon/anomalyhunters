@@ -3,45 +3,24 @@ import QtQuick.Layouts
 import QtGraphs
 import QtFacility
 
-// History line chart (Normal mode) + Test with Data input (Test mode)
+// History line chart
 ColumnLayout {
     id: root
 
     property var    timeSeries:  []
-    property bool   canTest:     false
-    property bool   testMode:    false
     property string equipmentId: ""
 
     readonly property var _last: timeSeries.length > 0 ? timeSeries[timeSeries.length - 1] : null
 
-    readonly property color _tempColor: {
-        const t = _last ? (_last["temperature"] ?? 0) : 0
-        if (t >= 50) return Constant.anomaly
-        if (t >= 40) return Constant.warning
-        return Constant.sensorTemp
-    }
-    readonly property color _pwrColor: {
-        const p = _last ? (_last["power"] ?? 0) : 0
-        if (p >= 90) return Constant.anomaly
-        if (p >= 60) return Constant.warning
-        return Constant.sensorPower
-    }
+    // qmllint disable missing-property
+    readonly property color _tempColor: Constant.tempStateColor(_last ? (_last["temperature"] ?? 0) : 0, _last !== null)
+    readonly property color _pwrColor:  Constant.pwrStateColor (_last ? (_last["power"]       ?? 0) : 0, _last !== null)
+    // qmllint enable missing-property
 
     readonly property real tempMin:  0
     readonly property real tempMax:  70
     readonly property real pwrMin:   0
     readonly property real pwrMax:  120
-
-    signal testToggled()
-    signal previewChanged(var series)
-
-    property real testTemperature: 35.0
-    property real testPower:       55.0
-
-    function collectSeries() {
-        return [{ "temperature": root.testTemperature, "power": root.testPower, "label": -1 }]
-    }
-    function notifyPreview() { previewChanged(collectSeries()) }
 
     function _norm(val, mn, mx) { return (val - mn) / (mx - mn) * 100.0 }
 
@@ -64,217 +43,87 @@ ColumnLayout {
 
     spacing: 6
 
+    // Header label
+    Text {
+        text:           "History  (" + root.timeSeries.length + " samples)"
+        color:          Constant.textLabel
+        font.pixelSize: 13
+    }
+
+    // Combined chart
+    GraphsView {
+        Layout.fillWidth: true
+        implicitHeight:   140
+        marginLeft:       0
+        marginRight:      0
+        marginTop:        0
+        marginBottom:     0
+
+        theme: GraphsTheme {
+            backgroundColor:           Constant.chartSlotBg
+            plotAreaBackgroundColor:   Constant.chartSlotBg
+            plotAreaBackgroundVisible: true
+            gridVisible:               false
+            labelFont.pixelSize:       10
+            labelTextColor:            Constant.textMuted
+            seriesColors: [Constant.sensorTemp, Constant.sensorPower]
+        }
+
+        axisX: ValueAxis {
+            id:           axisX
+            min:          0
+            max:          9
+            gridVisible:  false
+            subTickCount: 0
+            tickInterval: 5
+            labelFormat:  "%.0fs"
+        }
+        axisY: ValueAxis {
+            id:           axisY
+            min:          0
+            max:          100
+            tickInterval: 50
+            subTickCount: 0
+            labelFormat:  "%.0f%%"
+        }
+
+        LineSeries {
+            id:    tempSeries
+            width: 2
+            pointDelegate: Rectangle {
+                width: 6; height: 6; radius: 3
+                color: root._tempColor
+            }
+        }
+        LineSeries {
+            id:    pwrSeries
+            width: 2
+            pointDelegate: Rectangle {
+                width: 6; height: 6; radius: 3
+                color: root._pwrColor
+            }
+        }
+    }
+
+    // Legend
     RowLayout {
-        Layout.fillWidth: true
-        spacing: 6
-
-        Text {
-            text: root.testMode
-                  ? "Test with Data"
-                  : "History  (" + root.timeSeries.length + " samples)"
-            color: Constant.textLabel
-            font.pixelSize: 13
-        }
-
-        Item { Layout.fillWidth: true }
-
-        AppButton {
-            visible: root.testMode
-            implicitWidth: 130
-            label: "▶  Run Inference"
-            bgColor: "#0f2a18"
-            hoverColor: "#1a4a2a"
-            textColor: "#55ee88"
-            fontSize: 12
-            borderColor: "#338855"
-            onClicked: equipmentManager.runTestSeries(root.equipmentId, root.collectSeries()) // qmllint disable unqualified
-        }
-
-        AppButton {
-            visible: root.canTest
-            implicitWidth: 120
-            label: root.testMode ? "✕ Close Test" : "⚗ Test with Data"
-            bgColor:     root.testMode ? "#1a0830" : "#111a11"
-            hoverColor:  root.testMode ? "#2a1040" : "#1a2a1a"
-            textColor:   root.testMode ? "#cc88ff" : "#55bb77"
-            borderColor: root.testMode ? "#aa44ff" : "#336644"
-            fontSize: 12
-            onClicked: root.testToggled()
-        }
-    }
-
-    // Normal mode: combined chart
-    ColumnLayout {
-        visible:          !root.testMode
-        Layout.fillWidth: true
-        spacing: 4
-
-        GraphsView {
-            Layout.fillWidth: true
-            implicitHeight:   140
-            marginLeft:       0
-            marginRight:      0
-            marginTop:        0
-            marginBottom:     0
-
-            theme: GraphsTheme {
-                backgroundColor:           Constant.chartSlotBg
-                plotAreaBackgroundColor:   Constant.chartSlotBg
-                plotAreaBackgroundVisible: true
-                gridVisible:               false
-                labelFont.pixelSize:       10
-                labelTextColor:            Constant.textMuted
-                seriesColors: [Constant.sensorTemp, Constant.sensorPower]
-            }
-
-            axisX: ValueAxis {
-                id:           axisX
-                min:          0
-                max:          9
-                gridVisible:  false
-                subTickCount: 0
-                tickInterval: 5
-                labelFormat:  "%.0fs"
-            }
-            axisY: ValueAxis {
-                id:           axisY
-                min:          0
-                max:          100
-                tickInterval: 50
-                subTickCount: 0
-                labelFormat:  "%.0f%%"
-            }
-
-            LineSeries {
-                id:    tempSeries
-                width: 2
-                pointDelegate: Rectangle {
-                    width: 6; height: 6; radius: 3
-                    color: root._tempColor
-                }
-            }
-            LineSeries {
-                id:    pwrSeries
-                width: 2
-                pointDelegate: Rectangle {
-                    width: 6; height: 6; radius: 3
-                    color: root._pwrColor
-                }
-            }
-        }
-
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 16
-
-            Row {
-                spacing: 5
-                Rectangle { width: 16; height: 2; color: Constant.sensorTemp; anchors.verticalCenter: parent.verticalCenter }
-                Text {
-                    text: "Temp  " + root.tempMin.toFixed(0) + " - " + root.tempMax.toFixed(0) + " C"
-                    color: Constant.sensorTemp; font.pixelSize: 10
-                }
-            }
-            Row {
-                spacing: 5
-                Rectangle { width: 16; height: 2; color: Constant.sensorPower; anchors.verticalCenter: parent.verticalCenter }
-                Text {
-                    text: "Power  " + root.pwrMin.toFixed(0) + " - " + root.pwrMax.toFixed(0) + " W"
-                    color: Constant.sensorPower; font.pixelSize: 10
-                }
-            }
-        }
-    }
-
-    // Test mode: single sample input
-    Item {
-        visible:          root.testMode
-        Layout.fillWidth: true
-        implicitHeight:   tempCol.implicitHeight
+        Layout.alignment: Qt.AlignHCenter
+        spacing: 16
 
         Row {
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 20
-
-            Column {
-                id:      tempCol
-                spacing: 6
-
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text:           "Temperature (C)"
-                    color:          Constant.logSubText
-                    font.pixelSize: 14
-                }
-                Rectangle {
-                    width:        160
-                    height:       44
-                    color:        Constant.bgPanel
-                    border.color: "#2a4a5a"
-                    radius:       4
-                    TextInput {
-                        id:                  tempInput
-                        anchors { fill: parent; margins: 6 }
-                        color:               Constant.sensorTemp
-                        font.pixelSize:      22
-                        font.family:         "Courier New"
-                        text:                Math.round(root.testTemperature).toString()
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment:   Text.AlignVCenter
-                        onTextEdited: {
-                            var v = parseInt(text)
-                            if (isNaN(v)) return
-                            if (v > root.tempMax) { text = root.tempMax.toString(); v = root.tempMax }
-                            root.testTemperature = v
-                        }
-                    }
-                }
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text:           root.tempMin.toFixed(0) + " - " + root.tempMax.toFixed(0) + " C"
-                    color:          Constant.textLabel
-                    font.pixelSize: 11
-                }
+            spacing: 5
+            Rectangle { width: 16; height: 2; color: Constant.sensorTemp; anchors.verticalCenter: parent.verticalCenter }
+            Text {
+                text: "Temp  " + root.tempMin.toFixed(0) + " - " + root.tempMax.toFixed(0) + " C"
+                color: Constant.sensorTemp; font.pixelSize: 10
             }
-
-            Column {
-                spacing: 6
-
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text:           "Power (W)"
-                    color:          Constant.logSubText
-                    font.pixelSize: 14
-                }
-                Rectangle {
-                    width:        160
-                    height:       44
-                    color:        Constant.bgPanel
-                    border.color: "#2a3a5a"
-                    radius:       4
-                    TextInput {
-                        id:                  pwrInput
-                        anchors { fill: parent; margins: 6 }
-                        color:               Constant.sensorPower
-                        font.pixelSize:      22
-                        font.family:         "Courier New"
-                        text:                Math.round(root.testPower).toString()
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment:   Text.AlignVCenter
-                        onTextEdited: {
-                            var v = parseInt(text)
-                            if (isNaN(v)) return
-                            if (v > root.pwrMax) { text = root.pwrMax.toString(); v = root.pwrMax }
-                            root.testPower = v
-                        }
-                    }
-                }
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text:           root.pwrMin.toFixed(0) + " - " + root.pwrMax.toFixed(0) + " W"
-                    color:          Constant.textLabel
-                    font.pixelSize: 11
-                }
+        }
+        Row {
+            spacing: 5
+            Rectangle { width: 16; height: 2; color: Constant.sensorPower; anchors.verticalCenter: parent.verticalCenter }
+            Text {
+                text: "Power  " + root.pwrMin.toFixed(0) + " - " + root.pwrMax.toFixed(0) + " W"
+                color: Constant.sensorPower; font.pixelSize: 10
             }
         }
     }

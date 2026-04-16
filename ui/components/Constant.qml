@@ -7,6 +7,7 @@ QtObject {
     readonly property color bgWindow: "#12141f"
     readonly property color bgPanel:  "#0e1020"
     readonly property color bgCard:   "#181a2e"
+    readonly property color bgDialog: "#0d0f1c"
 
     // Border
     readonly property color border: "#2a2c4e"
@@ -18,19 +19,21 @@ QtObject {
     readonly property color textMuted:     "#444466"
 
     // Health state
-    readonly property color normal:    "#44cc77"
-    readonly property color warning:   "#d89050"
-    readonly property color anomaly:   "#cc3344"
-    readonly property color waiting:   "#4488cc"
-    readonly property color stopped:   "#8899aa"
+    readonly property color normal:  "#44cc77"
+    readonly property color warning: "#d89050"
+    readonly property color anomaly: "#cc3344"
+    readonly property color waiting: "#4488cc"
+    readonly property color stopped: "#8899aa"
 
-    // Sensor value text
+    // Sensor
     readonly property color sensorTemp:  "#66ddaa"
     readonly property color sensorPower: "#66aaff"
 
-    // Chart
+    // Chart / gauge
     readonly property color chartSlotBg: "#1a1c2e"
     readonly property color gaugeBg:     "#0e1020"
+    readonly property real  gaugeTempMax: 60.0
+    readonly property real  gaugePwrMax: 100.0
 
     // Selection / focus
     readonly property color selectionBg:     "#1e2a46"
@@ -43,44 +46,34 @@ QtObject {
     readonly property color logRowWarning:  "#3d2810"
     readonly property color logSubText:     "#aabbcc"
 
-    // Dialog
-    readonly property color bgDialog: "#0d0f1c"
+    // Input
+    readonly property color inputFocusBorder: "#818cf8"
 
-    // Success action (save, confirm)
-    readonly property color successText:   "#44aa66"
-    readonly property color successBg:     "#0f2a1c"
-    readonly property color successBgHov:  "#1a3a28"
-    readonly property color successBorder: "#226644"
-
-    // Danger action (delete, clear)
-    readonly property color dangerText:   "#cc5555"
-    readonly property color dangerBg:     "#2a0f0f"
-    readonly property color dangerBgHov:  "#3a1515"
-    readonly property color dangerBorder: "#882222"
-
-    // Control buttons: Start / Stop / Delete
-    readonly property color ctrlStartBg:     "#1a3a1a"
-    readonly property color ctrlStartBgHov:  "#1a5a1a"
-    readonly property color ctrlStartText:   "#ffffff"
-    readonly property color ctrlStartBorder: "#2a5a2a"
-
-    readonly property color ctrlStopBg:     "#4a1a1a"
-    readonly property color ctrlStopBgHov:  "#5a1a1a"
-    readonly property color ctrlStopText:   "#ff6666"
-
-    readonly property color ctrlDeleteBg:     "#1e1e2e"
-    readonly property color ctrlDeleteBgHov:  "#3a1a1a"
-    readonly property color ctrlDeleteText:   "#aa4444"
-    readonly property color ctrlDeleteBorder: "#2a2a3e"
-
-    // Test mode badge
-    readonly property color testModeBg:     "#2a1040"
-    readonly property color testModeBorder: "#aa44ff"
-    readonly property color testModeText:   "#cc88ff"
+    // Action color groups
+    readonly property var success:  ({ text: "#44aa66", bg: "#0f2a1c", bgHov: "#1a3a28", border: "#226644" })
+    readonly property var danger:   ({ text: "#cc5555", bg: "#2a0f0f", bgHov: "#3a1515", border: "#882222" })
+    readonly property var ctrlStart:({ bg: "#1a3a1a", bgHov: "#1a5a1a", text: "#ffffff", border: "#2a5a2a" })
+    readonly property var ctrlStop: ({ bg: "#4a1a1a", bgHov: "#5a1a1a", text: "#ff6666" })
+    readonly property var cancel:   ({ bg: "#1a1a2e", bgHov: "#2a1a2e" })
+    readonly property var saveTo:   ({ bg: "#1a1a0f", bgHov: "#2a2a1a", text: "#aaaa44", border: "#666622" })
 
     // Sensor format helpers
     function formatTemp(value)  { return Math.round(value) + " C" }
     function formatPower(value) { return Math.round(value) + " W" }
+
+    // Sensor state color helpers
+    function tempStateColor(val, hasData) {
+        if (!hasData)  return waiting
+        if (val >= 50) return anomaly
+        if (val >= 40) return warning
+        return normal
+    }
+    function pwrStateColor(val, hasData) {
+        if (!hasData)  return waiting
+        if (val >= 90) return anomaly
+        if (val >= 60) return warning
+        return sensorPower
+    }
 
     // healthStatus / event → color
     // status: "N/A" | "Normal" | "Warning" | "Abnormal" | "start" | "stop"

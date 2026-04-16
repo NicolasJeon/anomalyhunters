@@ -13,9 +13,9 @@ Rectangle {
     property real   temperature:   0
     property real   power:         0
 
-    color:        "#0d0f1c"
+    color:        Constant.bgDialog
     radius:       4
-    border.color: "#22253a"
+    border.color: Constant.border
     border.width: 1
 
     Shortcut {
@@ -77,10 +77,7 @@ Rectangle {
     }
 
     ColumnLayout {
-        anchors {
-            fill:    parent
-            margins: 8
-        }
+        anchors { fill: parent; margins: 8 }
         spacing: 6
 
         RowLayout {
@@ -101,30 +98,30 @@ Rectangle {
             Item { Layout.fillWidth: true }
 
             AppButton {
-                implicitWidth:  52
-                implicitHeight: 18
+                implicitWidth:  80
+                implicitHeight: 24
                 label:          "Save to DB"
-                fontSize:       10
+                fontSize:       12
                 readonly property bool canSave:
                     logList.selectedLog !== null &&
                     !(logList.selectedLog["savedToDB"] === true)
                 enabled:     canSave
-                bgColor:     canSave ? "#1a1a0f" : Constant.bgPanel
-                hoverColor:  "#2a2a1a"
-                textColor:   canSave ? "#aaaa44" : Constant.textMuted
-                borderColor: canSave ? "#666622" : Constant.border
+                bgColor:     canSave ? Constant.saveTo.bg     : Constant.bgPanel
+                hoverColor:  canSave ? Constant.saveTo.bgHov  : Constant.bgPanel
+                textColor:   canSave ? Constant.saveTo.text   : Constant.textMuted
+                borderColor: canSave ? Constant.saveTo.border : Constant.border
                 onClicked:   manualSaveDialog.open()
             }
 
             AppButton {
-                implicitWidth:  46
-                implicitHeight: 18
+                implicitWidth:  52
+                implicitHeight: 24
                 label:          "View DB"
-                fontSize:       10
-                bgColor:        Constant.successBg
-                hoverColor:     Constant.successBgHov
-                textColor:      Constant.successText
-                borderColor:    Constant.successBorder
+                fontSize:       12
+                bgColor:        Constant.success.bg
+                hoverColor:     Constant.success.bgHov
+                textColor:      Constant.success.text
+                borderColor:    Constant.success.border
                 onClicked:      dbDialog.loadAndOpen()
             }
         }

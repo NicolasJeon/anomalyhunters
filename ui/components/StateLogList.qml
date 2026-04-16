@@ -3,25 +3,20 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtFacility
 
-// 상태 로그 목록 공통 컴포넌트
-// StateLogPanel(인메모리)과 StateLogDialog(DB) 양쪽에서 재사용
-//
-// logs 항목 공통 필드:
-//   timestampMs, event, healthStatus, controlStatus, temperature, power
-// 인메모리 전용 필드 (없으면 무시):
-//   prevHealthStatus, prevTemperature, prevPower, savedToDB
-// DB 전용 필드:
-//   fromDB = true  (있으면 prev 센서값 숨김)
+// Shared log list — used by StateLogPanel (in-memory) and StateLogDialog (DB)
+// Common fields: timestampMs, event, healthStatus, controlStatus, temperature, power
+// In-memory only: prevHealthStatus, prevTemperature, prevPower, savedToDB
+// DB only: fromDB = true
 ListView {
     id: root
 
-    property var    logs:         []
-    property string emptyText:    "No state changes yet"
+    property var    logs:          []
+    property string emptyText:     "No state changes yet"
     property int    selectedIndex: -1
     property var    selectedLog:   null
     property int    fontSize:      0   // 0 = default; positive = add to base sizes
 
-    // logs 갱신 시 logId로 선택 항목을 추적 — index 변동 & savedToDB 갱신 대응
+    // re-track selected item by logId on log list update
     property var _trackLogId: undefined
 
     onLogsChanged: {
@@ -29,11 +24,11 @@ ListView {
         for (let i = 0; i < logs.length; i++) {
             if (logs[i]["logId"] === _trackLogId) {
                 selectedIndex = i
-                selectedLog   = logs[i]   // 최신 데이터(savedToDB 포함)로 갱신
+                selectedLog   = logs[i]   // refresh with latest data
                 return
             }
         }
-        // 버퍼에서 밀려난 경우 선택 해제
+        // evicted from buffer — clear selection
         selectedIndex = -1
         selectedLog   = null
         _trackLogId   = undefined
@@ -47,21 +42,12 @@ ListView {
         policy: ScrollBar.AsNeeded
     }
 
-    // // 빈 상태 안내
-    // Text {
-    //     anchors.centerIn: parent
-    //     visible:          root.logs.length === 0
-    //     text:             root.emptyText
-    //     color:            "#333355"
-    //     font.pixelSize:   11
-    // }
-
     delegate: Rectangle {
         id: row
         required property var modelData
         required property int index
 
-        // ── 상태 해석 ─────────────────────────────────────────────────────
+        // ── state ─────────────────────────────────────────────────────────────
         // in-memory: event + healthStatus  /  DB: state (unified field)
         readonly property bool fromDB: row.modelData["fromDB"] === true
         readonly property string ev:  row.modelData["event"] ?? ""
@@ -91,7 +77,7 @@ ListView {
             onClicked: {
                 root.selectedIndex = row.index
                 root.selectedLog   = row.modelData
-                root._trackLogId   = row.modelData["logId"]   // logId 없으면 undefined → 추적 비활성
+                root._trackLogId   = row.modelData["logId"]   // undefined if no logId → tracking disabled
             }
         }
 
@@ -103,19 +89,7 @@ ListView {
             }
             spacing: 5
 
-            // ── 이벤트 아이콘 ────────────────────────────────────────────────
-            Text {
-                text: {
-                    const key = (row.ev === "start" || row.ev === "stop") ? row.ev : row.hs.toLowerCase()
-                    if (key === "start") return "▶"
-                    if (key === "stop")  return "⏹"
-                    return "●"
-                }
-                color:          row.stateColor
-                font.pixelSize: 11 + root.fontSize
-            }
-
-            // ── 상태 텍스트 ─────────────────────────────────────────────────
+            // ── state text ────────────────────────────────────────────────────
             Text {
                 text: (row.ev === "start" || row.ev === "stop")
                       ? row.ev.toUpperCase()
@@ -125,7 +99,7 @@ ListView {
                 Layout.preferredWidth: 90
             }
 
-            // ── 현재 센서값 (모든 이벤트) ────────────────────────────────────
+            // ── sensor values ─────────────────────────────────────────────────
             Text {
                 text:            Constant.formatTemp(row.modelData["temperature"]  ?? 0)
                                + "  " + Constant.formatPower(row.modelData["power"] ?? 0)
@@ -135,7 +109,7 @@ ListView {
                 Layout.fillWidth: true
             }
 
-            // ── 시각 ─────────────────────────────────────────────────────────
+            // ── timestamp ─────────────────────────────────────────────────────
             Text {
                 text:                Qt.formatDateTime(
                                          new Date(row.modelData["timestampMs"] ?? 0),

@@ -1,13 +1,16 @@
 import QtQuick
 import QtQuick.Layouts
+import QtFacility
 
-// 상세 패널 헤더 — 장비 이름 + 상태별 제어 버튼
+// Detail panel header — name / edit / toggle
 // controlStatus: "Stopped" | "Running"
 RowLayout {
     id: root
 
     property string name:          ""
     property string controlStatus: "Stopped"
+
+    readonly property bool isRunning: controlStatus === "Running"
 
     signal startRequested()
     signal stopRequested()
@@ -18,45 +21,31 @@ RowLayout {
     // 장비 이름
     Text {
         text: root.name
-        color: "#e0e0f8"
+        color: Constant.textPrimary
         font.pixelSize: 18
         font.bold: true
     }
 
-    Item { Layout.fillWidth: true }
-
-    // 편집 버튼 (항상 표시)
+    // 편집 버튼 (이름 오른쪽)
     AppButton {
-        implicitWidth: 64
-        label: "Edit"
-        bgColor: "#1a2035"
-        hoverColor: "#253050"
-        textColor: "#6688bb"
-        hoverTextColor: "#88aaff"
-        borderColor: "#2a3a5a"
-        hoverBorderColor: "#5599ff"
+        implicitWidth:    64
+        label:            "Edit"
+        bgColor:          Constant.bgPanel
+        hoverColor:       "#253050"
+        textColor:        "#6688bb"
+        hoverTextColor:   "#88aaff"
+        borderColor:      Constant.border
+        hoverBorderColor: Constant.focusAccent
         onClicked: root.editRequested()
     }
 
-    // Stopped → [▶ Start]
-    AppButton {
-        visible: root.controlStatus === "Stopped"
-        implicitWidth: 80
-        label: "Start"
-        bgColor:    Constant.ctrlStartBg
-        hoverColor: Constant.ctrlStartBgHov
-        textColor:  Constant.ctrlStartText
-        onClicked: root.startRequested()
-    }
+    Item { Layout.fillWidth: true }
 
-    // Running → [⏹ Stop]
-    AppButton {
-        visible: root.controlStatus === "Running"
-        implicitWidth: 70
-        label: "Stop"
-        bgColor:    Constant.ctrlStopBg
-        hoverColor: Constant.ctrlStopBgHov
-        textColor:  Constant.ctrlStopText
-        onClicked: root.stopRequested()
+    // 토글 스위치
+    ControlSwitch {
+        Layout.alignment: Qt.AlignVCenter
+        isRunning:        root.isRunning
+        onStartRequested: root.startRequested()
+        onStopRequested:  root.stopRequested()
     }
 }

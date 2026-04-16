@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 
-// 장비 이미지 카드 — 이미지 없을 때 플레이스홀더 표시
+// Equipment image card with placeholder
 Rectangle {
     id: root
 
@@ -13,13 +13,15 @@ Rectangle {
     border.width: 1
 
     Image {
+        readonly property bool isDefault: root.imageSource === ""
         anchors {
-            fill: parent
-            margins: 6
+            fill:    parent
+            margins: isDefault ? 0 : 8
         }
-        source: root.imageSource !== "" ? root.imageSource
-                                        : "qrc:/qt/qml/QtFacility/images/default.png"
-        fillMode: Image.PreserveAspectFit
-        smooth: true
+        source:   isDefault ? "qrc:/images/default.png"
+                            : root.imageSource
+        fillMode: isDefault ? Image.Pad : Image.PreserveAspectFit
+        smooth:   true
+        mipmap:   true
     }
 }

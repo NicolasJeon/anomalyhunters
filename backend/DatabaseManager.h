@@ -14,9 +14,11 @@ public:
 
     // Equipment persistence
     QVariantList loadEquipment() const;
-    void saveNewEquipment(const QString& id, const QString& name, const QString& imageSource);
+    void saveNewEquipment(const QString& id, const QString& name,
+                          const QString& imageSource, const QString& ip);
     void deleteEquipment(const QString& id);
-    void updateEquipment(const QString& id, const QString& name, const QString& imageSource);
+    void updateEquipment(const QString& id, const QString& name,
+                         const QString& imageSource, const QString& ip);
 
     // State event log
     QVariantList queryStateEvents(const QString& equipmentId, int limit = 50) const;

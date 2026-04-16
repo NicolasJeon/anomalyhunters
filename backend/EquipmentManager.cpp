@@ -11,17 +11,18 @@ EquipmentManager::EquipmentManager(QObject* parent)
     // Load from DB; seed defaults if empty
     const QVariantList saved = DatabaseManager::instance().loadEquipment();
     if (saved.isEmpty()) {
-        addEquipment("Air Circulator", "qrc:/qt/qml/QtFacility/images/air_circulator.png");
-        addEquipment("Temp Controller","qrc:/qt/qml/QtFacility/images/temp_controller.png");
-        addEquipment("Pump A",         "qrc:/qt/qml/QtFacility/images/pump.png");
-        addEquipment("Pump B",         "qrc:/qt/qml/QtFacility/images/pump.png");
-        addEquipment("Generator",      "qrc:/qt/qml/QtFacility/images/generator.png");
+        addEquipment("Air Circulator", "qrc:/images/air_circulator.png", "192.168.0.101");
+        addEquipment("Temp Controller","qrc:/images/temp_controller.png","192.168.0.102");
+        addEquipment("Pump A",         "qrc:/images/pump.png",           "192.168.0.103");
+        addEquipment("Pump B",         "qrc:/images/pump.png",           "192.168.0.104");
+        addEquipment("Generator",      "qrc:/images/generator.png",      "192.168.0.105");
     } else {
         for (const QVariant& v : saved) {
             const QVariantMap m = v.toMap();
             const QString id    = m["id"].toString();
             const QString name  = m["name"].toString();
             const QString img   = m["imageSource"].toString();
+            const QString ip    = m["ip"].toString();
 
             // Restore nextEquipmentNum_ from "devN" id format
             const QString suffix = id.mid(3);
@@ -36,6 +37,7 @@ EquipmentManager::EquipmentManager(QObject* parent)
             entry->equipment.healthStatus  = "N/A";
             entry->equipment.controlStatus = "Stopped";
             entry->equipment.imageSource   = img;
+            entry->equipment.ip            = ip;
             entry->simulator               = DeviceTimeSeriesSimulator(equipmentOrder_.size());
             entry->detector                = std::make_unique<AnomalyDetector>();
 
@@ -58,11 +60,9 @@ EquipmentManager::EquipmentManager(QObject* parent)
     connect(monitor_.get(), &EquipmentMonitor::selectedStateLogsUpdated,
             this, &EquipmentManager::selectedStateLogsChanged);
 
-    // Auto-start and select first equipment
-    if (!equipmentOrder_.isEmpty()) {
-        startEquipment(equipmentOrder_.first());
+    // Select first equipment (do not auto-start)
+    if (!equipmentOrder_.isEmpty())
         setSelectedEquipmentId(equipmentOrder_.first());
-    }
 }
 
 QVariantList EquipmentManager::equipment() const
@@ -126,7 +126,7 @@ void EquipmentManager::setSelectedEquipmentId(const QString& id)
     emit selectedStateLogsChanged();
 }
 
-void EquipmentManager::addEquipment(QString name, QString imageSource)
+void EquipmentManager::addEquipment(QString name, QString imageSource, QString ip)
 {
     if (name.isEmpty())
         name = "Equipment " + QString::number(nextEquipmentNum_);
@@ -139,13 +139,14 @@ void EquipmentManager::addEquipment(QString name, QString imageSource)
     entry->equipment.healthStatus  = "N/A";
     entry->equipment.controlStatus = "Stopped";
     entry->equipment.imageSource   = imageSource;
+    entry->equipment.ip            = ip;
     entry->simulator               = DeviceTimeSeriesSimulator(equipmentOrder_.size());
     entry->detector                = std::make_unique<AnomalyDetector>();
 
     equipmentOrder_.append(id);
     entries_.emplace(id, std::move(entry));
 
-    DatabaseManager::instance().saveNewEquipment(id, name, imageSource);
+    DatabaseManager::instance().saveNewEquipment(id, name, imageSource, ip);
     emit equipmentChanged();
 }
 
@@ -169,15 +170,17 @@ void EquipmentManager::removeEquipment(QString equipmentId)
     emit equipmentChanged();
 }
 
-void EquipmentManager::updateEquipment(QString equipmentId, QString name, QString imageSource)
+void EquipmentManager::updateEquipment(QString equipmentId, QString name,
+                                       QString imageSource, QString ip)
 {
     EquipmentEntry* e = entryFor(equipmentId);
     if (!e) return;
 
     e->equipment.name        = name;
     e->equipment.imageSource = imageSource;
+    e->equipment.ip          = ip;
 
-    DatabaseManager::instance().updateEquipment(equipmentId, name, imageSource);
+    DatabaseManager::instance().updateEquipment(equipmentId, name, imageSource, ip);
 
     emit equipmentChanged();
     if (equipmentId == selectedEquipmentId_)

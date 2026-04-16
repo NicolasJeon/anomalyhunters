@@ -70,10 +70,11 @@ public:
 
     // Equipment CRUD
     Q_INVOKABLE void addEquipment(QString name,
-                                  QString imageSource = QString{});
+                                  QString imageSource = QString{},
+                                  QString ip = QString{});
     Q_INVOKABLE void removeEquipment(QString equipmentId);
     Q_INVOKABLE void updateEquipment(QString equipmentId, QString name,
-                                     QString imageSource);
+                                     QString imageSource, QString ip);
 
     // Control
     Q_INVOKABLE void startEquipment(QString equipmentId);

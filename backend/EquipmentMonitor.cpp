@@ -73,35 +73,23 @@ void EquipmentMonitor::runTestSeries(const QString& equipmentId, const QVariantL
     EquipmentManager::EquipmentEntry* e = manager_.entryFor(equipmentId);
     if (!e || e->equipment.controlStatus != "Stopped" || series.isEmpty()) return;
 
-    e->series.clear();
     e->inference = InferenceState{};
 
     AnomalyDetector::Result lastResult;
-    const qint64 now = QDateTime::currentMSecsSinceEpoch();
-    const int    n   = series.size();
-
-    for (int i = 0; i < n; ++i) {
-        const QVariantMap row  = series[i].toMap();
-        const int temp  = row.value("temperature").toInt();
-        const int power = row.value("power").toInt();
-
-        lastResult = e->detector->predict(temp, power);
-
-        TimeSeriesSample ts;
-        ts.timestampMs = now - static_cast<qint64>(n - 1 - i) * 1000;
-        ts.temperature = temp;
-        ts.power       = power;
-        ts.label       = static_cast<int>(lastResult.finalState);
-        e->series.append(ts);
+    for (int i = 0; i < series.size(); ++i) {
+        const QVariantMap row = series[i].toMap();
+        lastResult = e->detector->predict(
+            row.value("temperature").toInt(),
+            row.value("power").toInt());
     }
 
     e->inference.label = static_cast<int>(lastResult.finalState);
     updateHealthStatus(e->equipment, e->inference);
 
+    // time series는 수정하지 않음 — 메인 창 StatusCard가 오염되지 않도록
     emit equipmentUpdated();
     if (equipmentId == manager_.selectedEquipmentId()) {
         emit selectedEquipmentUpdated();
-        emit selectedTimeSeriesUpdated();
         emit selectedInferenceUpdated();
     }
 }

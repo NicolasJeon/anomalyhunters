@@ -72,6 +72,7 @@ struct Equipment {
     QString healthStatus;
     QString controlStatus;
     QString imageSource;
+    QString ip;
 
     QVariantMap toVariantMap() const {
         return {
@@ -79,7 +80,8 @@ struct Equipment {
             { "name",          name          },
             { "healthStatus",  healthStatus  },
             { "controlStatus", controlStatus },
-            { "imageSource",   imageSource   }
+            { "imageSource",   imageSource   },
+            { "ip",            ip            }
         };
     }
 };

@@ -59,9 +59,32 @@ bool DatabaseManager::init(const QString& path)
                 id           TEXT    PRIMARY KEY,
                 name         TEXT    NOT NULL,
                 image_source TEXT    NOT NULL DEFAULT '',
+                ip           TEXT    NOT NULL DEFAULT '',
                 order_index  INTEGER NOT NULL DEFAULT 0
             )
         )");
+    }
+
+    // Migrate image paths: old qrc:/qt/qml/QtFacility/images/ → qrc:/images/
+    {
+        QSqlQuery mig;
+        mig.exec("UPDATE devices SET image_source = REPLACE(image_source, "
+                 "'qrc:/qt/qml/QtFacility/images/', 'qrc:/images/')");
+    }
+
+    // ip column migration (may be absent in older DBs)
+    {
+        QSqlQuery check;
+        check.exec("PRAGMA table_info(devices)");
+        bool hasIp = false;
+        while (check.next()) {
+            if (check.value(1).toString() == "ip")
+                hasIp = true;
+        }
+        if (!hasIp) {
+            QSqlQuery alter;
+            alter.exec("ALTER TABLE devices ADD COLUMN ip TEXT NOT NULL DEFAULT ''");
+        }
     }
 
     // state_events table
@@ -92,7 +115,7 @@ QVariantList DatabaseManager::loadEquipment() const
     if (!initialized_) return {};
 
     QSqlQuery q;
-    q.exec("SELECT id, name, image_source FROM devices ORDER BY order_index ASC");
+    q.exec("SELECT id, name, image_source, ip FROM devices ORDER BY order_index ASC");
 
     QVariantList result;
     while (q.next()) {
@@ -100,13 +123,14 @@ QVariantList DatabaseManager::loadEquipment() const
         m["id"]          = q.value(0).toString();
         m["name"]        = q.value(1).toString();
         m["imageSource"] = q.value(2).toString();
+        m["ip"]          = q.value(3).toString();
         result.append(m);
     }
     return result;
 }
 
 void DatabaseManager::saveNewEquipment(const QString& id, const QString& name,
-                                       const QString& imageSource)
+                                       const QString& imageSource, const QString& ip)
 {
     if (!initialized_) return;
 
@@ -115,11 +139,12 @@ void DatabaseManager::saveNewEquipment(const QString& id, const QString& name,
     int nextOrder = maxQ.next() ? maxQ.value(0).toInt() + 1 : 0;
 
     QSqlQuery q;
-    q.prepare("INSERT OR REPLACE INTO devices (id, name, image_source, order_index) "
-              "VALUES (:id, :name, :img, :ord)");
+    q.prepare("INSERT OR REPLACE INTO devices (id, name, image_source, ip, order_index) "
+              "VALUES (:id, :name, :img, :ip, :ord)");
     q.bindValue(":id",   id);
     q.bindValue(":name", name);
     q.bindValue(":img",  imageSource);
+    q.bindValue(":ip",   ip);
     q.bindValue(":ord",  nextOrder);
     if (!q.exec())
         qWarning() << "DatabaseManager: saveNewEquipment failed:" << q.lastError().text();
@@ -137,14 +162,15 @@ void DatabaseManager::deleteEquipment(const QString& id)
 }
 
 void DatabaseManager::updateEquipment(const QString& id, const QString& name,
-                                      const QString& imageSource)
+                                      const QString& imageSource, const QString& ip)
 {
     if (!initialized_) return;
 
     QSqlQuery q;
-    q.prepare("UPDATE devices SET name = :name, image_source = :img WHERE id = :id");
+    q.prepare("UPDATE devices SET name = :name, image_source = :img, ip = :ip WHERE id = :id");
     q.bindValue(":name", name);
     q.bindValue(":img",  imageSource);
+    q.bindValue(":ip",   ip);
     q.bindValue(":id",   id);
     if (!q.exec())
         qWarning() << "DatabaseManager: updateEquipment failed:" << q.lastError().text();

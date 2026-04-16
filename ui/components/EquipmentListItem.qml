@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtFacility
 
-// Equipment list item: thumbnail / name+status / control buttons
+// Equipment list item
 Rectangle {
     id: root
 
@@ -15,141 +15,132 @@ Rectangle {
     signal deleteRequested()
 
     readonly property string controlStatus: equipmentData["controlStatus"] ?? "Stopped"
-    readonly property string healthStatus:  equipmentData["healthStatus"]  ?? "Normal"
+    readonly property string healthStatus:  equipmentData["healthStatus"]  ?? "N/A"
+    readonly property string ip:            equipmentData["ip"]            ?? ""
+    readonly property bool   isRunning:     controlStatus === "Running"
 
-    function healthColor(status) { return Constant.healthColor(status) }
+    height: 72
+    color:  root.isSelected ? Constant.selectionBg : Constant.bgPanel
 
-    component DeleteBtn: AppButton {
-        implicitWidth: 44
-        implicitHeight: 18
-        label: "Delete"
-        fontSize: 10
-        bgColor:     Constant.ctrlDeleteBg
-        hoverColor:  Constant.ctrlDeleteBgHov
-        textColor:   Constant.ctrlDeleteText
-        borderColor: Constant.ctrlDeleteBorder
-        onClicked: root.deleteRequested()
+    // ── selection bar ─────────────────────────────────────────────────────────
+    Rectangle {
+        width:  3
+        height: parent.height
+        color:  root.isSelected ? Constant.focusAccent : "transparent"
     }
 
-    height: 76
-    color: root.isSelected ? Constant.selectionBg : Constant.bgPanel
-
-    // Selection indicator bar
-    Rectangle { width: 3; height: parent.height; color: root.isSelected ? Constant.focusAccent : "transparent" }
-
+    // ── divider ───────────────────────────────────────────────────────────────
     Rectangle {
         anchors.bottom: parent.bottom
-        width: parent.width
+        width:  parent.width
         height: 1
-        color: "#1e2035"
+        color:  "#1e2035"
     }
 
     MouseArea { anchors.fill: parent; onClicked: root.selected() }
 
     RowLayout {
         anchors {
-            fill: parent
-            leftMargin: 12
-            rightMargin: 8
-            topMargin: 6
-            bottomMargin: 6
+            fill:         parent
+            leftMargin:   12
+            rightMargin:  10
+            topMargin:     8
+            bottomMargin:  8
         }
-        spacing: 8
+        spacing: 10
 
-        // Thumbnail: image + bottom-right status dot
+        // ── thumbnail ─────────────────────────────────────────────────────────
         Item {
-            implicitWidth: 36
-            implicitHeight: 36
+            implicitWidth:  38
+            implicitHeight: 38
             Layout.alignment: Qt.AlignVCenter
 
             Rectangle {
                 anchors.fill: parent
-                radius: 4
-                color: "#0e1020"
-                visible: true
+                radius: 6
+                color:  root.isRunning ? "#12182e" : "#0c0e18"
 
                 Image {
-                    anchors {
-                        fill: parent
-                        margins: 2
-                    }
+                    anchors { fill: parent; margins: 3 }
                     source: (root.equipmentData["imageSource"] ?? "") !== ""
                             ? root.equipmentData["imageSource"]
-                            : "qrc:/qt/qml/QtFacility/images/default.png"
+                            : "qrc:/images/default.png"
                     fillMode: Image.PreserveAspectFit
-                    smooth: true
+                    smooth:   true
+                    opacity:  root.isRunning ? 1.0 : 0.35
+                    Behavior on opacity { NumberAnimation { duration: 200 } }
                 }
 
+                // ── status dot ────────────────────────────────────────────────
                 Rectangle {
-                    anchors {
-                        right: parent.right
-                        bottom: parent.bottom
-                    }
-                    width: 8
-                    height: 8
-                    radius: 4
-                    color: root.healthColor(root.healthStatus)
-                    border.color: "#0e1020"
+                    anchors { right: parent.right; bottom: parent.bottom }
+                    width:  8; height: 8; radius: 4
+                    color:        root.isRunning
+                                  ? Constant.healthColor(root.healthStatus)
+                                  : Constant.stopped
+                    border.color: "#0c0e18"
                     border.width: 1
                 }
             }
         }
 
+        // ── name + IP ─────────────────────────────────────────────────────────
         ColumnLayout {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            spacing: 2
+            Layout.fillWidth:  true
+            Layout.alignment:  Qt.AlignVCenter
+            spacing: 3
 
             Text {
-                text: root.equipmentData["name"] ?? ""
-                color: "#d0d0ee"
+                text:           root.equipmentData["name"] ?? ""
+                color:          root.isRunning ? "#d0d0ee" : "#555570"
                 font.pixelSize: 13
-                font.bold: true
-                elide: Text.ElideRight
+                font.bold:      true
+                elide:          Text.ElideRight
                 Layout.fillWidth: true
+                Behavior on color { ColorAnimation { duration: 200 } }
             }
+
             Text {
-                text: root.healthStatus
-                color: "#666688"
+                text:           root.ip !== "" ? root.ip : "—"
+                color:          root.isRunning ? "#55557a" : "#333350"
                 font.pixelSize: 11
-                elide: Text.ElideRight
+                font.bold:      true
+                elide:          Text.ElideRight
                 Layout.fillWidth: true
+                Behavior on color { ColorAnimation { duration: 200 } }
+            }
+        }
+
+        // ── toggle ────────────────────────────────────────────────────────────
+        ControlSwitch {
+            Layout.alignment: Qt.AlignVCenter
+            isRunning:        root.isRunning
+            onStartRequested: root.startRequested()
+            onStopRequested:  root.stopRequested()
+        }
+
+        // ── delete ────────────────────────────────────────────────────────────
+        Rectangle {
+            implicitWidth:  26
+            implicitHeight: 26
+            radius:         4
+            color:          deleteArea.containsMouse ? "#3a1010" : "transparent"
+            Layout.alignment: Qt.AlignVCenter
+            Behavior on color { ColorAnimation { duration: 120 } }
+
+            Text {
+                anchors.centerIn: parent
+                text:           "✕"
+                color:          deleteArea.containsMouse ? "#cc5555" : "#4a3040"
+                font.pixelSize: 12
+                Behavior on color { ColorAnimation { duration: 120 } }
             }
 
-            RowLayout {
-                Layout.fillWidth: true
-                visible: root.controlStatus === "Stopped"
-                spacing: 4
-                AppButton {
-                    implicitWidth: 44
-                    implicitHeight: 18
-                    label: "Start"
-                    fontSize: 10
-                    bgColor:    Constant.ctrlStartBg
-                    hoverColor: Constant.ctrlStartBgHov
-                    textColor:  Constant.ctrlStartText
-                    onClicked: root.startRequested()
-                }
-                Item { Layout.fillWidth: true }
-                DeleteBtn {}
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-                visible: root.controlStatus === "Running"
-                spacing: 4
-                AppButton {
-                    implicitWidth: 44
-                    implicitHeight: 18
-                    label: "Stop"
-                    fontSize: 10
-                    bgColor:    Constant.ctrlStopBg
-                    hoverColor: Constant.ctrlStopBgHov
-                    textColor:  Constant.ctrlStopText
-                    onClicked: root.stopRequested()
-                }
-                Item { Layout.fillWidth: true }
-                DeleteBtn {}
+            MouseArea {
+                id:           deleteArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked:    root.deleteRequested()
             }
         }
     }
