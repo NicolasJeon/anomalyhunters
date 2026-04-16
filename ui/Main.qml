@@ -2,7 +2,6 @@ import QtQuick
 import "layout"
 import "components"
 
-// equipmentManager injected via setContextProperty() in main.cpp
 Window {
     width:         1280
     height:        720

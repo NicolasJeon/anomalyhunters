@@ -18,8 +18,6 @@ qt_add_executable(appAnomalyHunters
     backend/AnomalyDetector.cpp
     backend/DeviceTimeSeriesSimulator.h
     backend/DeviceTimeSeriesSimulator.cpp
-    backend/EquipmentManager.h
-    backend/EquipmentManager.cpp
     backend/EquipmentMonitor.h
     backend/EquipmentMonitor.cpp
     backend/DatabaseManager.h
@@ -35,6 +33,9 @@ set_source_files_properties(ui/components/Constant.qml
 qt_add_qml_module(appAnomalyHunters
     URI QtFacility
     VERSION 1.0
+    SOURCES
+        backend/EquipmentManager.h
+        backend/EquipmentManager.cpp
     QML_FILES
         ui/Main.qml
         # layout — 화면 전체 구성
@@ -87,7 +88,8 @@ set_target_properties(appAnomalyHunters PROPERTIES
 )
 
 target_include_directories(appAnomalyHunters PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}   # main.cpp에서 "backend/..." include 가능
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/backend
 )
 
 target_link_libraries(appAnomalyHunters

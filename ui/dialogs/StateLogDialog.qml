@@ -12,7 +12,7 @@ Popup {
     property var    dbLogs:        []
 
     function loadAndOpen() {
-        dbLogs = equipmentManager.queryEquipmentStateLogs(equipmentId) // qmllint disable unqualified
+        dbLogs = EquipmentManager.queryEquipmentStateLogs(equipmentId) 
         open()
     }
 
@@ -63,7 +63,7 @@ Popup {
                     textColor:         Constant.danger.text
                     borderColor:       Constant.danger.border
                     onClicked: {
-                        equipmentManager.clearEquipmentStateLogs(root.equipmentId) // qmllint disable unqualified
+                        EquipmentManager.clearEquipmentStateLogs(root.equipmentId) 
                         root.dbLogs = []
                         clearConfirmDialog.close()
                         toast.show()

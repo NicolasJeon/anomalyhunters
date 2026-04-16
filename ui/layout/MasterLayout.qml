@@ -2,12 +2,12 @@ import QtQuick
 import "../components"
 
 // Master panel — logic glue
-// qmllint disable unqualified
+
 MasterLayoutForm {
     id: root
 
-    equipment:           equipmentManager.equipment
-    selectedEquipmentId: equipmentManager.selectedEquipmentId
+    equipment:           EquipmentManager.equipment
+    selectedEquipmentId: EquipmentManager.selectedEquipmentId
 
     // ── status counts ──
     readonly property var _counts: {
@@ -27,8 +27,8 @@ MasterLayoutForm {
 
     // ── header buttons ──
     btnAdd.onClicked:      equipmentDialog.open("", "", "", "")
-    btnStartAll.onClicked: equipmentManager.startAll()
-    btnStopAll.onClicked:  equipmentManager.stopAll()
+    btnStartAll.onClicked: EquipmentManager.startAll()
+    btnStopAll.onClicked:  EquipmentManager.stopAll()
 
     // ── list delegate ──
     equipmentList.delegate: EquipmentListItem {
@@ -37,9 +37,9 @@ MasterLayoutForm {
         equipmentData: modelData
         isSelected:    modelData["id"] === root.selectedEquipmentId
 
-        onSelected:        equipmentManager.selectedEquipmentId = modelData["id"]
-        onStartRequested:  equipmentManager.startEquipment(modelData["id"])
-        onStopRequested:   equipmentManager.stopEquipment(modelData["id"])
-        onDeleteRequested: equipmentManager.removeEquipment(modelData["id"])
+        onSelected:        EquipmentManager.selectedEquipmentId = modelData["id"]
+        onStartRequested:  EquipmentManager.startEquipment(modelData["id"])
+        onStopRequested:   EquipmentManager.stopEquipment(modelData["id"])
+        onDeleteRequested: EquipmentManager.removeEquipment(modelData["id"])
     }
 }

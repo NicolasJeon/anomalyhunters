@@ -1,8 +1,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QQmlContext>
 
-#include "backend/EquipmentManager.h"
 #include "backend/DatabaseManager.h"
 
 int main(int argc, char *argv[])
@@ -11,10 +9,7 @@ int main(int argc, char *argv[])
 
     DatabaseManager::instance().init();
 
-    EquipmentManager equipmentManager;
-
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty("equipmentManager", &equipmentManager);
 
     QObject::connect(
         &engine,

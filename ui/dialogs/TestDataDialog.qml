@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import QtFacility
 
 // Separate window for single-sample inference testing
-// qmllint disable unqualified
+
 Window {
     id: root
 
@@ -27,7 +27,7 @@ Window {
     property real _committedTemp:  35.0
     property real _committedPower: 55.0
 
-    readonly property bool _hasResult: (equipmentManager.selectedInference["label"] ?? -1) !== -1
+    readonly property bool _hasResult: (EquipmentManager.selectedInference["label"] ?? -1) !== -1
 
     function _collectSeries() {
         return [{ "temperature": root.testTemperature, "power": root.testPower, "label": -1 }]
@@ -36,7 +36,7 @@ Window {
     function _runInference() {
         root._committedTemp  = root.testTemperature
         root._committedPower = root.testPower
-        equipmentManager.runTestSeries(equipmentManager.selectedEquipmentId, root._collectSeries())
+        EquipmentManager.runTestSeries(EquipmentManager.selectedEquipmentId, root._collectSeries())
     }
 
     ColumnLayout {
@@ -132,8 +132,8 @@ Window {
             Layout.fillWidth:       true
             Layout.preferredHeight: 140
             controlStatus: root._hasResult ? "Running" : "Stopped"
-            label:       equipmentManager.selectedInference["label"]      ?? -1
-            statusText:  equipmentManager.selectedInference["statusText"] ?? "—"
+            label:       EquipmentManager.selectedInference["label"]      ?? -1
+            statusText:  EquipmentManager.selectedInference["statusText"] ?? "—"
             hasData:     root._hasResult
             temperature: root._committedTemp
             power:       root._committedPower

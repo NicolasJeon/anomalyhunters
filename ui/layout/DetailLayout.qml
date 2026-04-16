@@ -1,23 +1,23 @@
 import QtQuick
 
 // Detail panel — logic glue
-// qmllint disable unqualified
+
 DetailLayoutForm {
     id: root
 
     // ── bindings ──
-    selDev:              equipmentManager.selectedEquipment
-    selInf:              equipmentManager.selectedInference
-    selTS:               equipmentManager.selectedTimeSeries
-    selectedEquipmentId: equipmentManager.selectedEquipmentId
+    selDev:              EquipmentManager.selectedEquipment
+    selInf:              EquipmentManager.selectedInference
+    selTS:               EquipmentManager.selectedTimeSeries
+    selectedEquipmentId: EquipmentManager.selectedEquipmentId
     // ── state log ──
-    stateLogPanel.logs: equipmentManager.selectedStateLogs
+    stateLogPanel.logs: EquipmentManager.selectedStateLogs
 
     // ── header controls ──
-    equipmentHeader.onStartRequested: equipmentManager.startEquipment(root.selectedEquipmentId)
-    equipmentHeader.onStopRequested:  equipmentManager.stopEquipment(root.selectedEquipmentId)
+    equipmentHeader.onStartRequested: EquipmentManager.startEquipment(root.selectedEquipmentId)
+    equipmentHeader.onStopRequested:  EquipmentManager.stopEquipment(root.selectedEquipmentId)
     equipmentHeader.onEditRequested: {
-        const d = equipmentManager.selectedEquipment
+        const d = EquipmentManager.selectedEquipment
         equipmentDialog.open(root.selectedEquipmentId,
                              d["name"] ?? "", d["imageSource"] ?? "",
                              d["ip"] ?? "")

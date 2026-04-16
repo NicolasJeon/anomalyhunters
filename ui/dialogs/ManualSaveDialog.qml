@@ -107,8 +107,8 @@ Popup {
                 borderColor:       Constant.success.border
 
                 function doSave() {
-                    // qmllint disable unqualified
-                    equipmentManager.manualSaveToDb(root.equipmentId, root.logId,
+                    
+                    EquipmentManager.manualSaveToDb(root.equipmentId, root.logId,
                                                     root.temperature, root.power,
                                                     root.healthStatus)
                     root.close()

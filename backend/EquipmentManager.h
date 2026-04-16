@@ -8,6 +8,7 @@
 #include <QVariantList>
 #include <QVariantMap>
 #include <QVector>
+#include <QtQml/qqmlregistration.h>
 
 #include "Equipment.h"
 #include "AnomalyDetector.h"
@@ -17,11 +18,13 @@
 class EquipmentMonitor;
 
 // Core backend — owns equipment data, handles CRUD/control/state-log
-// Exposed to QML as context property "equipmentManager"
+// Registered as QML singleton type "EquipmentManager"
 // Real-time inference/simulation delegated to EquipmentMonitor
 class EquipmentManager : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON
 
     Q_PROPERTY(QVariantList equipment
                READ equipment NOTIFY equipmentChanged)
