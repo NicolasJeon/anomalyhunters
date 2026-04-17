@@ -16,9 +16,8 @@ void EquipmentMonitor::stopSimulation()  { timer_.stop(); }
 
 void EquipmentMonitor::tick()
 {
-    bool anyRunning         = false;
-    bool selectedRunning    = false;
-    bool selectedLogChanged = false;
+    bool anyRunning      = false;
+    bool selectedRunning = false;
     const QString selectedId = manager_.selectedEquipmentId();
 
     for (const QString& id : manager_.equipmentOrder()) {
@@ -34,11 +33,10 @@ void EquipmentMonitor::tick()
 
         const QString prevHealth = e->prevHealthStatus;
         updateHealthStatus(e->equipment, e->inference);
-        if (e->equipment.healthStatus != prevHealth) {
+        if (e->equipment.healthStatus != prevHealth)
             manager_.appendStateLog(e, "health_change", s.temperature, s.power);
-            if (id == selectedId) selectedLogChanged = true;
-        }
         e->prevHealthStatus = e->equipment.healthStatus;
+        manager_.listModel().updateStatus(id, e->equipment.healthStatus, e->equipment.controlStatus);
 
         TimeSeriesSample ts;
         ts.timestampMs = QDateTime::currentMSecsSinceEpoch();
@@ -53,11 +51,10 @@ void EquipmentMonitor::tick()
         if (id == selectedId) selectedRunning = true;
     }
 
-    if (anyRunning)         emit equipmentUpdated();
-    if (selectedRunning)  { emit selectedEquipmentUpdated();
-                            emit selectedTimeSeriesUpdated();
-                            emit selectedInferenceUpdated(); }
-    if (selectedLogChanged) emit selectedStateLogsUpdated();
+    if (anyRunning)        emit equipmentUpdated();
+    if (selectedRunning) { emit selectedEquipmentUpdated();
+                           emit selectedTimeSeriesUpdated();
+                           emit selectedInferenceUpdated(); }
 }
 
 void EquipmentMonitor::updateHealthStatus(Equipment& eq, const InferenceState& inf)
@@ -85,6 +82,7 @@ void EquipmentMonitor::runTestSeries(const QString& equipmentId, const QVariantL
 
     e->inference.label = static_cast<int>(lastResult.finalState);
     updateHealthStatus(e->equipment, e->inference);
+    manager_.listModel().updateStatus(equipmentId, e->equipment.healthStatus, e->equipment.controlStatus);
 
     // time series는 수정하지 않음 — 메인 창 StatusCard가 오염되지 않도록
     emit equipmentUpdated();
@@ -102,6 +100,7 @@ void EquipmentMonitor::clearEquipmentDisplay(const QString& equipmentId)
     e->series.clear();
     e->inference = InferenceState{};
     updateHealthStatus(e->equipment, e->inference);
+    manager_.listModel().updateStatus(equipmentId, e->equipment.healthStatus, e->equipment.controlStatus);
 
     emit equipmentUpdated();
     if (equipmentId == manager_.selectedEquipmentId()) {

@@ -14,6 +14,8 @@
 #include "AnomalyDetector.h"
 #include "DatabaseManager.h"
 #include "DeviceTimeSeriesSimulator.h"
+#include "EquipmentListModel.h"
+#include "StateLogListModel.h"
 
 class EquipmentMonitor;
 
@@ -26,8 +28,14 @@ class EquipmentManager : public QObject
     QML_ELEMENT
     QML_SINGLETON
 
-    Q_PROPERTY(QVariantList equipment
-               READ equipment NOTIFY equipmentChanged)
+    Q_PROPERTY(EquipmentListModel* equipmentListModel
+               READ equipmentListModel CONSTANT)
+
+    Q_PROPERTY(int  countTotal    READ countTotal    NOTIFY equipmentChanged)
+    Q_PROPERTY(int  countNormal   READ countNormal   NOTIFY equipmentChanged)
+    Q_PROPERTY(int  countWarning  READ countWarning  NOTIFY equipmentChanged)
+    Q_PROPERTY(int  countAbnormal READ countAbnormal NOTIFY equipmentChanged)
+    Q_PROPERTY(bool anyRunning    READ anyRunning    NOTIFY equipmentChanged)
 
     Q_PROPERTY(QString selectedEquipmentId
                READ selectedEquipmentId WRITE setSelectedEquipmentId
@@ -42,8 +50,8 @@ class EquipmentManager : public QObject
     Q_PROPERTY(QVariantMap selectedInference
                READ selectedInference NOTIFY selectedInferenceChanged)
 
-    Q_PROPERTY(QVariantList selectedStateLogs
-               READ selectedStateLogs NOTIFY selectedStateLogsChanged)
+    Q_PROPERTY(StateLogListModel* stateLogsModel
+               READ stateLogsModel CONSTANT)
 
 public:
     // All runtime data for a single equipment unit
@@ -62,12 +70,22 @@ public:
     ~EquipmentManager();
 
     // Property accessors
-    QVariantList equipment()           const;
+    EquipmentListModel* equipmentListModel() { return &equipmentListModel_; }
+    int  countTotal()    const { return (int)entries_.size(); }
+    int  countNormal()   const { return countByHealth("Normal");   }
+    int  countWarning()  const { return countByHealth("Warning");  }
+    int  countAbnormal() const { return countByHealth("Abnormal"); }
+    bool anyRunning()    const {
+        for (const auto& [id, e] : entries_)
+            if (e->equipment.controlStatus == "Running") return true;
+        return false;
+    }
+
     QString      selectedEquipmentId() const { return selectedEquipmentId_; }
     QVariantMap  selectedEquipment()   const;
     QVariantList selectedTimeSeries()  const;
     QVariantMap  selectedInference()   const;
-    QVariantList selectedStateLogs()   const;
+    StateLogListModel* stateLogsModel() { return &stateLogModel_; }
 
     void setSelectedEquipmentId(const QString& id);
 
@@ -104,6 +122,7 @@ public:
     // EquipmentMonitor access
     EquipmentEntry*    entryFor(const QString& id) const;
     const QStringList& equipmentOrder()            const { return equipmentOrder_; }
+    EquipmentListModel& listModel()                      { return equipmentListModel_; }
     void appendStateLog(EquipmentEntry* e, const QString& event,
                         int temperature, int power);
 
@@ -112,15 +131,23 @@ signals:
     void selectedEquipmentChanged();
     void selectedTimeSeriesChanged();
     void selectedInferenceChanged();
-    void selectedStateLogsChanged();
 
 private:
+    int countByHealth(const QString& h) const {
+        int n = 0;
+        for (const auto& [id, e] : entries_)
+            if (e->equipment.healthStatus == h) ++n;
+        return n;
+    }
+
     QStringList equipmentOrder_;
     std::map<QString, std::unique_ptr<EquipmentEntry>> entries_;
     QString     selectedEquipmentId_;
     int         nextEquipmentNum_ = 1;
     quint64     nextLogId_        = 1;
 
+    EquipmentListModel            equipmentListModel_;
+    StateLogListModel             stateLogModel_;
     std::unique_ptr<EquipmentMonitor> monitor_;
 
     static constexpr int SERIES_WINDOW = 10;

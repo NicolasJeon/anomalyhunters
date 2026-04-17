@@ -10,12 +10,7 @@ AppLayoutForm {
             EquipmentManager.updateEquipment(id, name, img, ip)
     }
 
-    testModeBtn.enabled: {
-        const eq = EquipmentManager.equipment
-        for (var i = 0; i < eq.length; i++)
-            if ((eq[i]["controlStatus"] ?? "Stopped") === "Running") return false
-        return true
-    }
+    testModeBtn.enabled: !EquipmentManager.anyRunning
 
     // qmllint disable missing-property
     testModeBtn.onClicked: {

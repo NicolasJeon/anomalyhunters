@@ -6,7 +6,6 @@ QtObject {
     // Background
     readonly property color bgWindow:      "#12141f"
     readonly property color bgPanel:       "#0e1020"
-    readonly property color bgCard:        "#181a2e"
     readonly property color bgDialog:      "#2d2d2d"
     readonly property color bgDetail:      "#262626"
     readonly property color bgOverlay:     "#a0000000"
@@ -46,7 +45,6 @@ QtObject {
     readonly property color sensorPower: "#9885f4"
 
     // Chart / gauge
-    readonly property color chartSlotBg: "#1a1c2e"
     readonly property color gaugeBg:     "#0e1020"
     readonly property real  gaugeTempMax: 60.0
     readonly property real  gaugePwrMax: 100.0
@@ -69,8 +67,6 @@ QtObject {
     // Log rows
     readonly property color logRowBg:       "#2d2d2d"
     readonly property color logRowSelected: "#3f3f3f"
-    readonly property color logRowAbnormal: "#4a1a1a"
-    readonly property color logRowWarning:  "#4a3010"
     readonly property color logSubText:     "#aabbcc"
     readonly property color logSensorText:  "#7c8eb5"
     readonly property color logRowBorder:   "#3d4e68"
@@ -81,7 +77,6 @@ QtObject {
     readonly property var ctrlStart:  ({ bg: "#1a3a1a", bgHov: "#1a5a1a", text: "#ffffff",  border: "#2a5a2a" })
     readonly property var ctrlStop:   ({ bg: "#4a1a1a", bgHov: "#5a1a1a", text: "#ff6666" })
     readonly property var cancel:     ({ bg: "#1a1a2e", bgHov: "#2a1a2e" })
-    readonly property var saveTo:     ({ bg: "#1a1a0f", bgHov: "#2a2a1a", text: "#aaaa44",  border: "#666622" })
     readonly property var primary:    ({ bg: "#6366f1", bgHov: "#7577f3", text: "#ffffff",  border: "#6366f1" })
     readonly property var run:        ({ bg: "#0f2a18", bgHov: "#1a4a2a", text: "#55ee88",  border: "#338855" })
     readonly property var btnAdd:     ({ bg: "#2a2060", bgHov: "#3a30a0", text: "#818cf8",  border: "#4a40a0" })

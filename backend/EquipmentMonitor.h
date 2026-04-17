@@ -27,7 +27,6 @@ signals:
     void selectedEquipmentUpdated();
     void selectedTimeSeriesUpdated();
     void selectedInferenceUpdated();
-    void selectedStateLogsUpdated();
 
 private slots:
     void tick();

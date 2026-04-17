@@ -42,6 +42,7 @@ EquipmentManager::EquipmentManager(QObject* parent)
             entry->detector                = std::make_unique<AnomalyDetector>();
 
             equipmentOrder_.append(id);
+            equipmentListModel_.append(entry->equipment);
             entries_.emplace(id, std::move(entry));
         }
         emit equipmentChanged();
@@ -57,22 +58,10 @@ EquipmentManager::EquipmentManager(QObject* parent)
             this, &EquipmentManager::selectedTimeSeriesChanged);
     connect(monitor_.get(), &EquipmentMonitor::selectedInferenceUpdated,
             this, &EquipmentManager::selectedInferenceChanged);
-    connect(monitor_.get(), &EquipmentMonitor::selectedStateLogsUpdated,
-            this, &EquipmentManager::selectedStateLogsChanged);
 
     // Select first equipment (do not auto-start)
     if (!equipmentOrder_.isEmpty())
         setSelectedEquipmentId(equipmentOrder_.first());
-}
-
-QVariantList EquipmentManager::equipment() const
-{
-    QVariantList list;
-    for (const QString& id : equipmentOrder_) {
-        if (const EquipmentEntry* e = entryFor(id))
-            list.append(e->equipment.toVariantMap());
-    }
-    return list;
 }
 
 QVariantMap EquipmentManager::selectedEquipment() const
@@ -104,26 +93,17 @@ QVariantMap EquipmentManager::selectedInference() const
     return e->inference.toVariantMap();
 }
 
-QVariantList EquipmentManager::selectedStateLogs() const
-{
-    const EquipmentEntry* e = entryFor(selectedEquipmentId_);
-    if (!e) return {};
-
-    QVariantList result;
-    result.reserve(e->stateLog.size());
-    for (int i = e->stateLog.size() - 1; i >= 0; --i)
-        result.append(e->stateLog[i].toVariantMap());
-    return result;
-}
-
 void EquipmentManager::setSelectedEquipmentId(const QString& id)
 {
     if (selectedEquipmentId_ == id) return;
     selectedEquipmentId_ = id;
+
+    const EquipmentEntry* e = entryFor(id);
+    stateLogModel_.setAll(e ? e->stateLog : QVector<StateLogEntry>{});
+
     emit selectedEquipmentChanged();
     emit selectedTimeSeriesChanged();
     emit selectedInferenceChanged();
-    emit selectedStateLogsChanged();
 }
 
 void EquipmentManager::addEquipment(QString name, QString imageSource, QString ip)
@@ -144,6 +124,7 @@ void EquipmentManager::addEquipment(QString name, QString imageSource, QString i
     entry->detector                = std::make_unique<AnomalyDetector>();
 
     equipmentOrder_.append(id);
+    equipmentListModel_.append(entry->equipment);
     entries_.emplace(id, std::move(entry));
 
     DatabaseManager::instance().saveNewEquipment(id, name, imageSource, ip);
@@ -156,12 +137,15 @@ void EquipmentManager::removeEquipment(QString equipmentId)
 
     entries_.erase(equipmentId);
     equipmentOrder_.removeAll(equipmentId);
+    equipmentListModel_.remove(equipmentId);
 
     DatabaseManager::instance().deleteEquipment(equipmentId);
     DatabaseManager::instance().clearEquipmentEvents(equipmentId);
 
     if (selectedEquipmentId_ == equipmentId) {
         selectedEquipmentId_ = equipmentOrder_.isEmpty() ? QString{} : equipmentOrder_.first();
+        const EquipmentEntry* newE = entryFor(selectedEquipmentId_);
+        stateLogModel_.setAll(newE ? newE->stateLog : QVector<StateLogEntry>{});
         emit selectedEquipmentChanged();
         emit selectedTimeSeriesChanged();
         emit selectedInferenceChanged();
@@ -181,8 +165,8 @@ void EquipmentManager::updateEquipment(QString equipmentId, QString name,
     e->equipment.ip          = ip;
 
     DatabaseManager::instance().updateEquipment(equipmentId, name, imageSource, ip);
+    equipmentListModel_.update(equipmentId, name, imageSource, ip);
 
-    emit equipmentChanged();
     if (equipmentId == selectedEquipmentId_)
         emit selectedEquipmentChanged();
 }
@@ -198,12 +182,11 @@ void EquipmentManager::startEquipment(QString equipmentId)
     const int curPower = e->series.isEmpty() ? 0 : e->series.last().power;
 
     appendStateLog(e, "start", curTemp, curPower);
-
+    equipmentListModel_.updateStatus(equipmentId, e->equipment.healthStatus, "Running");
     emit equipmentChanged();
-    if (equipmentId == selectedEquipmentId_) {
+
+    if (equipmentId == selectedEquipmentId_)
         emit selectedEquipmentChanged();
-        emit selectedStateLogsChanged();
-    }
 }
 
 void EquipmentManager::stopEquipment(QString equipmentId)
@@ -223,12 +206,13 @@ void EquipmentManager::stopEquipment(QString equipmentId)
     e->series.clear();
     e->inference = InferenceState{};
 
+    equipmentListModel_.updateStatus(equipmentId, "N/A", "Stopped");
     emit equipmentChanged();
+
     if (equipmentId == selectedEquipmentId_) {
         emit selectedEquipmentChanged();
         emit selectedTimeSeriesChanged();
         emit selectedInferenceChanged();
-        emit selectedStateLogsChanged();
     }
 }
 
@@ -276,7 +260,7 @@ void EquipmentManager::manualSaveToDb(QString equipmentId, quint64 logId,
         temperature, power, timestampMs);
 
     if (equipmentId == selectedEquipmentId_)
-        emit selectedStateLogsChanged();
+        stateLogModel_.markSaved(logId);
 }
 
 void EquipmentManager::clearEquipmentStateLogs(QString equipmentId)
@@ -296,9 +280,16 @@ void EquipmentManager::appendStateLog(EquipmentEntry* e, const QString& event,
     le.temperature   = temperature;
     le.power         = power;
 
-    if (e->stateLog.size() >= LOG_BUFFER)
+    const bool overflow = (e->stateLog.size() >= LOG_BUFFER);
+    if (overflow)
         e->stateLog.removeFirst();
     e->stateLog.append(le);
+
+    if (e->equipment.id == selectedEquipmentId_) {
+        if (overflow)
+            stateLogModel_.removeLast();   // oldest entry sits at end of model
+        stateLogModel_.prepend(le);
+    }
 }
 
 EquipmentManager::EquipmentEntry* EquipmentManager::entryFor(const QString& id) const

@@ -13,7 +13,7 @@ Rectangle {
     property string selectedEquipmentId: ""
 
     // ── exposed aliases ───────────────────────────────────────────────────────
-    property alias equipmentHeader: equipmentHeader
+    property alias detailHeader: detailHeader
     property alias statusCard:      statusCard
     property alias historyChart:    historyChart
     property alias stateLogPanel:   stateLogPanel
@@ -39,8 +39,8 @@ Rectangle {
         visible: root.selectedEquipmentId !== ""
 
         // ① header
-        EquipmentHeader {
-            id:            equipmentHeader
+        DetailHeader {
+            id:            detailHeader
             Layout.fillWidth: true
             name:          root.selDev["name"]          ?? ""
             controlStatus: root.selDev["controlStatus"] ?? "Stopped"

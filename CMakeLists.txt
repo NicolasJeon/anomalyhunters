@@ -15,6 +15,10 @@ qt_add_executable(appAnomalyHunters
     # backend
     backend/Equipment.h
     backend/AnomalyDetector.h
+    backend/EquipmentListModel.h
+    backend/EquipmentListModel.cpp
+    backend/StateLogListModel.h
+    backend/StateLogListModel.cpp
     backend/AnomalyDetector.cpp
     backend/DeviceTimeSeriesSimulator.h
     backend/DeviceTimeSeriesSimulator.cpp
@@ -52,10 +56,12 @@ qt_add_qml_module(appAnomalyHunters
         ui/components/LabeledInput.qml
         ui/components/SensorRow.qml
         ui/components/ControlSwitch.qml
-        ui/components/EquipmentHeader.qml
-        ui/components/EquipmentListItem.qml
+        ui/components/DetailHeader.qml
+        ui/components/EquipmentDelegate.qml
+        ui/components/EquipmentList.qml
         ui/components/HistoryChart.qml
         ui/components/ImageCard.qml
+        ui/components/StateLogDelegate.qml
         ui/components/StateLogList.qml
         ui/components/StateLogPanel.qml
         ui/components/StatusCard.qml

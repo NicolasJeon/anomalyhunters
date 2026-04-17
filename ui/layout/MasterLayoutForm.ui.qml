@@ -7,9 +7,6 @@ import "../components"
 Rectangle {
     id: root
 
-    property var    equipment:           []
-    property string selectedEquipmentId: ""
-
     // bound in MasterLayout.qml
     property int countTotal:    0
     property int countNormal:   0
@@ -17,10 +14,9 @@ Rectangle {
     property int countAbnormal: 0
 
     // ── exposed aliases ───────────────────────────────────────────────────────
-    property alias equipmentList: equipmentList
-    property alias btnAdd:        btnAdd
-    property alias btnStartAll:   btnStartAll
-    property alias btnStopAll:    btnStopAll
+    property alias btnAdd:      btnAdd
+    property alias btnStartAll: btnStartAll
+    property alias btnStopAll:  btnStopAll
 
     color: Constant.bgDialog
 
@@ -66,19 +62,9 @@ Rectangle {
         }
 
         // ── equipment list ────────────────────────────────────────────────────
-        ListView {
-            id:               equipmentList
-            Layout.fillWidth: true
+        EquipmentList {
+            Layout.fillWidth:  true
             Layout.fillHeight: true
-            clip:             true
-            model:            root.equipment
-
-            delegate: EquipmentListItem {
-                required property var modelData
-                width:         ListView.view.width
-                equipmentData: modelData
-                isSelected:    modelData["id"] === root.selectedEquipmentId
-            }
         }
 
         // ── stats bar ─────────────────────────────────────────────────────────

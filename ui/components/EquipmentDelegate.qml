@@ -140,7 +140,7 @@ Rectangle {
                 id:           deleteArea
                 anchors.fill: parent
                 hoverEnabled: true
-                onClicked:    root.deleteRequested()
+                onClicked: root.deleteRequested()
             }
         }
     }

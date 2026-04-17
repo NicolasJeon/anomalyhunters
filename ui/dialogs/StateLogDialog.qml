@@ -9,10 +9,11 @@ Popup {
 
     property string equipmentId:   ""
     property string equipmentName: ""
-    property var    dbLogs:        []
+
+    StateLogListModel { id: dbModel }
 
     function loadAndOpen() {
-        dbLogs = EquipmentManager.queryEquipmentStateLogs(equipmentId) 
+        dbModel.setAllFromVariantList(EquipmentManager.queryEquipmentStateLogs(equipmentId))
         open()
     }
 
@@ -63,8 +64,8 @@ Popup {
                     textColor:         Constant.danger.text
                     borderColor:       Constant.danger.border
                     onClicked: {
-                        EquipmentManager.clearEquipmentStateLogs(root.equipmentId) 
-                        root.dbLogs = []
+                        EquipmentManager.clearEquipmentStateLogs(root.equipmentId)
+                        dbModel.clear()
                         clearConfirmDialog.close()
                         toast.show()
                     }
@@ -158,7 +159,7 @@ Popup {
                     Layout.alignment: Qt.AlignHCenter
                 }
                 Text {
-                    text:             root.equipmentName + "  (" + root.dbLogs.length + " records)"
+                    text:             root.equipmentName + "  (" + dbModel.count + " records)"
                     color:            Constant.textLabel
                     font.pixelSize:   14
                     Layout.alignment: Qt.AlignHCenter
@@ -176,7 +177,7 @@ Popup {
             Layout.bottomMargin: 8
             Layout.leftMargin:   10
             Layout.rightMargin:  10
-            logs:      root.dbLogs
+            model:     dbModel
             emptyText: "No records saved to DB yet"
             fontSize:  2
         }
