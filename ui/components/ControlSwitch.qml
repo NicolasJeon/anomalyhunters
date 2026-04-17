@@ -23,7 +23,7 @@ Switch {
         implicitWidth:  42
         implicitHeight: 24
         radius: height / 2
-        color:  root.checked ? Constant.inputFocusBorder : Constant.dividerDark
+        color:  root.checked ? Constant.inputFocusBorder : Constant.switchOffBg
         scale:  root.pressed ? 0.88 : 1.0
         border.color: root.checked ? "transparent" : Constant.switchOffBorder
         border.width: 1

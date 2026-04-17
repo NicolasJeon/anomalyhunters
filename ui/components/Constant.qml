@@ -58,8 +58,9 @@ QtObject {
     readonly property color inputFocusBorder: "#818cf8"
 
     // Control switch
-    readonly property color switchOffBorder: "#4a5080"
-    readonly property color switchKnobOff:   "#4a4c6a"
+    readonly property color switchOffBg:     "#4a4e6a"
+    readonly property color switchOffBorder: "#6a6e8a"
+    readonly property color switchKnobOff:   "#9a9cb8"
 
     // Splitter handle
     readonly property color splitterHover: "#2a3a5a"
