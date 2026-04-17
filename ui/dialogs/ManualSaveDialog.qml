@@ -69,10 +69,10 @@ Popup {
             rowSpacing: 4
 
             Text { text: "Temperature (°C)"; color: Constant.textLabel; font.pixelSize: 12 }
-            Text { text: Math.round(root.temperature); color: "#e0e0f8"; font.pixelSize: 13; font.family: "Courier New" }
+            Text { text: Math.round(root.temperature); color: Constant.textPrimary; font.pixelSize: 13; font.family: "Courier New" }
 
             Text { text: "Power (W)"; color: Constant.textLabel; font.pixelSize: 12 }
-            Text { text: Math.round(root.power); color: "#e0e0f8"; font.pixelSize: 13; font.family: "Courier New" }
+            Text { text: Math.round(root.power); color: Constant.textPrimary; font.pixelSize: 13; font.family: "Courier New" }
         }
 
         // ── status (read-only) ────────────────────────────────────────────────

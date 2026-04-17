@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Dialogs
+import QtFacility
 
 // Add / Edit equipment dialog
 // open("", "", "", "") — add mode; open(id, ...) — edit mode
@@ -15,7 +16,7 @@ Rectangle {
     signal confirmed(string equipmentId, string name, string imgSource, string ip)
 
     visible: false
-    color: "#a0000000"
+    color: Constant.bgOverlay
 
     // ── open / close ──────────────────────────────────────────────────────────
     function open(id, name, img, ip) {
@@ -42,10 +43,10 @@ Rectangle {
     // ── dialog box ────────────────────────────────────────────────────────────
     Rectangle {
         anchors.centerIn: parent
-        width:  400
-        height: formCol.implicitHeight + 40
-        color:        Constant.bgCard
-        radius:       8
+        width:  420
+        height: formCol.implicitHeight + 48
+        color:        Constant.bgDialog
+        radius:       10
         border.color: Constant.border
         border.width: 1
 
@@ -53,17 +54,20 @@ Rectangle {
 
         ColumnLayout {
             id: formCol
-            anchors { top: parent.top; left: parent.left; right: parent.right; margins: 20 }
-            spacing: 14
+            anchors { top: parent.top; left: parent.left; right: parent.right; margins: 24 }
+            spacing: 16
 
+            // ── title ─────────────────────────────────────────────────────────
             Text {
                 text:                root.editMode ? "Edit Equipment" : "Add Equipment"
-                color:               "#c0c0e0"
-                font.pixelSize:      16
+                color:               Constant.textPrimary
+                font.pixelSize:      18
                 font.bold:           true
                 Layout.fillWidth:    true
                 horizontalAlignment: Text.AlignHCenter
             }
+
+            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Constant.border }
 
             // ── name ──────────────────────────────────────────────────────────
             LabeledInput {
@@ -87,9 +91,9 @@ Rectangle {
             // ── image ─────────────────────────────────────────────────────────
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 5
+                spacing: 6
 
-                Text { text: "Image"; color: "#7777aa"; font.pixelSize: 11 }
+                Text { text: "Image"; color: Constant.textHeader; font.pixelSize: 12 }
 
                 RowLayout {
                     Layout.fillWidth: true
@@ -97,46 +101,48 @@ Rectangle {
 
                     Rectangle {
                         Layout.fillWidth: true
-                        implicitHeight: 28
+                        implicitHeight: 36
                         radius: 4
-                        color: "#0e1020"
-                        border.color: "#2a2c4e"
+                        color: Constant.bgPanel
+                        border.color: Constant.border
                         TextInput {
-                            anchors { fill: parent; margins: 6 }
-                            color: "#d0d0ee"
-                            font.pixelSize: 11
+                            anchors { fill: parent; margins: 8 }
+                            color: Constant.textPrimary
+                            font.pixelSize: 14
                             text: root.imgSource
                             onTextEdited: root.imgSource = text
                         }
                         Text {
-                            anchors { fill: parent; margins: 6 }
+                            anchors { fill: parent; margins: 8 }
                             text: "File path or URL"
-                            color: "#444466"
-                            font.pixelSize: 11
+                            color: Constant.textSecondary
+                            font.pixelSize: 14
                             visible: root.imgSource === ""
                         }
                     }
 
                     AppButton {
-                        implicitWidth: 72
+                        implicitWidth:  76
+                        implicitHeight: 32
                         label:       "Browse"
-                        bgColor:     "#181a2e"
-                        hoverColor:  "#253050"
-                        textColor:   "#88aaff"
-                        fontSize:    11
-                        borderColor: "#2a2c4e"
+                        bgColor:     Constant.btnBrowse.bg
+                        hoverColor:  Constant.btnBrowse.bgHov
+                        textColor:   Constant.btnBrowse.text
+                        fontSize:    12
+                        borderColor: Constant.btnBrowse.border
                         onClicked:   imagePicker.open()
                     }
 
                     AppButton {
-                        implicitWidth: 44
+                        implicitWidth:  56
+                        implicitHeight: 32
                         visible:     root.editMode && root.imgSource !== ""
                         label:       "Remove"
-                        bgColor:     "#1e1a1a"
-                        hoverColor:  "#3a1a1a"
-                        textColor:   "#cc6666"
-                        fontSize:    11
-                        borderColor: "#3a2a2a"
+                        bgColor:     Constant.danger.bg
+                        hoverColor:  Constant.danger.bgHov
+                        textColor:   Constant.danger.text
+                        fontSize:    12
+                        borderColor: Constant.danger.border
                         onClicked:   root.imgSource = ""
                     }
                 }
@@ -145,8 +151,8 @@ Rectangle {
                     implicitWidth:  64
                     implicitHeight: 64
                     radius: 4
-                    color:        "#0e1020"
-                    border.color: "#2a2c4e"
+                    color:        Constant.bgDetail
+                    border.color: Constant.border
                     visible: root.imgSource !== ""
                     Image {
                         anchors { fill: parent; margins: 3 }
@@ -160,26 +166,33 @@ Rectangle {
             // ── footer ────────────────────────────────────────────────────────
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: 10
+
                 Item { Layout.fillWidth: true }
 
                 AppButton {
-                    implicitWidth: 80
+                    implicitWidth:  90
+                    implicitHeight: 36
                     label:       "Cancel"
-                    bgColor:     "#181828"
-                    hoverColor:  "#2a1a2a"
-                    textColor:   "#7777aa"
-                    borderColor: "#3a3a5a"
+                    fontSize:    13
+                    bgColor:     Constant.cancelDlg.bg
+                    hoverColor:  Constant.cancelDlg.bgHov
+                    textColor:   Constant.textHeader
+                    borderColor: Constant.cancelDlg.border
                     onClicked:   root.close()
                 }
 
                 AppButton {
-                    implicitWidth: 100
+                    implicitWidth:  120
+                    implicitHeight: 36
                     label:       root.editMode ? "Save" : "Add Equipment"
-                    bgColor:     nameInput.text.trim() === "" ? "#141420" : "#1e1a40"
-                    hoverColor:  nameInput.text.trim() === "" ? "#141420" : "#2a2560"
-                    textColor:   nameInput.text.trim() === "" ? "#444466" : "#818cf8"
-                    borderColor: nameInput.text.trim() === "" ? "#2a2c3e" : "#5558a0"
+                    fontSize:    13
+                    bold:        true
+                    enabled:     nameInput.text.trim() !== ""
+                    bgColor:     nameInput.text.trim() === "" ? Constant.bgDetail      : Constant.confirmDlg.bg
+                    hoverColor:  nameInput.text.trim() === "" ? Constant.bgDetail      : Constant.confirmDlg.bgHov
+                    textColor:   nameInput.text.trim() === "" ? Constant.textSecondary : Constant.confirmDlg.text
+                    borderColor: nameInput.text.trim() === "" ? Constant.textSecondary : Constant.confirmDlg.border
                     onClicked: {
                         var name = nameInput.text.trim()
                         if (name === "") return

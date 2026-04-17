@@ -20,7 +20,7 @@ Rectangle {
     Text {
         anchors.centerIn: parent
         text:             Qt.formatDateTime(new Date(), "yyyy-MM-dd  hh:mm:ss")
-        color:            "#c0c0e0"
+        color:            Constant.textHeader
         font.pixelSize:   15
         font.family:      "Courier New"
 
@@ -37,10 +37,10 @@ Rectangle {
         anchors { right: parent.right; rightMargin: 16; verticalCenter: parent.verticalCenter }
         implicitWidth: 130
         label:       "Test Mode"
-        bgColor:     "#111a11"
-        hoverColor:  "#1a2a1a"
-        textColor:   "#55bb77"
-        borderColor: "#336644"
+        bgColor:     Constant.bgDialog
+        hoverColor:  Constant.bgDialog
+        textColor:   Constant.primary.bg
+        borderColor: Constant.primary.bg
         fontSize:    14
         bold:        true
     }

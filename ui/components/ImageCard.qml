@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtFacility
 
 // Equipment image card with placeholder
 Rectangle {
@@ -8,8 +9,8 @@ Rectangle {
     property string imageSource: ""
 
     radius: 8
-    color: "#0e1020"
-    border.color: "#2a2c4e"
+    color: Constant.bgDetail
+    border.color: Constant.border
     border.width: 1
 
     Image {

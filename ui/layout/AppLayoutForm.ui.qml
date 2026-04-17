@@ -39,15 +39,15 @@ Item {
             handle: Rectangle {
                 implicitWidth: 4
                 color: SplitHandle.pressed ? Constant.focusAccent
-                     : SplitHandle.hovered ? "#2a3a5a"
-                     : Constant.bgCard
+                     : SplitHandle.hovered ? Constant.splitterHover
+                     : Constant.bgDialog
 
                 Rectangle {
                     anchors.centerIn: parent
                     width:  2
                     height: 32
                     radius: 1
-                    color: SplitHandle.hovered ? Constant.focusAccent : "#3a4a6a"
+                    color: SplitHandle.hovered ? Constant.focusAccent : Constant.splitterDot
                 }
             }
 

@@ -87,41 +87,26 @@ Rectangle {
             Text {
                 text:           "Runtime State Log"
                 color:          Constant.textLabel
+                font.bold:           true
                 font.pixelSize: 13
             }
             Text {
                 text:           "(" + root.logs.length + ")"
-                color:          Constant.textMuted
+                color:          Constant.textLabel
                 font.pixelSize: 11
             }
 
             Item { Layout.fillWidth: true }
 
             AppButton {
-                implicitWidth:  80
-                implicitHeight: 24
-                label:          "Save to DB"
-                fontSize:       12
-                readonly property bool canSave:
-                    logList.selectedLog !== null &&
-                    !(logList.selectedLog["savedToDB"] === true)
-                enabled:     canSave
-                bgColor:     canSave ? Constant.saveTo.bg     : Constant.bgPanel
-                hoverColor:  canSave ? Constant.saveTo.bgHov  : Constant.bgPanel
-                textColor:   canSave ? Constant.saveTo.text   : Constant.textMuted
-                borderColor: canSave ? Constant.saveTo.border : Constant.border
-                onClicked:   manualSaveDialog.open()
-            }
-
-            AppButton {
                 implicitWidth:  52
                 implicitHeight: 24
                 label:          "View DB"
                 fontSize:       12
-                bgColor:        Constant.success.bg
-                hoverColor:     Constant.success.bgHov
-                textColor:      Constant.success.text
-                borderColor:    Constant.success.border
+                bgColor:        Constant.primary.bg
+                hoverColor:     Constant.primary.bgHov
+                textColor:      Constant.primary.text
+                borderColor:    Constant.primary.border
                 onClicked:      dbDialog.loadAndOpen()
             }
         }
@@ -132,6 +117,15 @@ Rectangle {
             Layout.fillHeight: true
             logs:              root.logs
             emptyText:         "No state changes yet"
+            onSaveRequested: (logData) => {
+                manualSaveDialog.logId        = logData["logId"]       ?? 0
+                manualSaveDialog.temperature  = logData["temperature"] ?? 0
+                manualSaveDialog.power        = logData["power"]       ?? 0
+                const ev = logData["event"] ?? ""
+                manualSaveDialog.healthStatus = (ev === "start" || ev === "stop")
+                                               ? ev : (logData["healthStatus"] ?? "")
+                manualSaveDialog.open()
+            }
         }
     }
 }

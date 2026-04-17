@@ -1,13 +1,14 @@
 import QtQuick
+import QtFacility
 
 // Reusable button
 Rectangle {
     id: root
 
     property string label:            ""
-    property color  bgColor:          "#1a2035"
+    property color  bgColor:          Constant.btnDefault.bg
     property color  hoverColor:       bgColor
-    property color  textColor:        "#88aaff"
+    property color  textColor:        Constant.btnDefault.text
     property color  hoverTextColor:   textColor
     property color  borderColor:      "transparent"
     property color  hoverBorderColor: borderColor

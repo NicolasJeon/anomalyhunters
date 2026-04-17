@@ -22,7 +22,7 @@ Rectangle {
     property alias btnStartAll:   btnStartAll
     property alias btnStopAll:    btnStopAll
 
-    color: "#0e1020"
+    color: Constant.bgDialog
 
     ColumnLayout {
         anchors.fill: parent
@@ -32,7 +32,7 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight:   46
-            color:            "#181a2e"
+            color:            Constant.bgDialog
 
             Text {
                 anchors {
@@ -41,7 +41,7 @@ Rectangle {
                     verticalCenter: parent.verticalCenter
                 }
                 text:           "Equipment"
-                color:          "#c0c0e0"
+                color:          Constant.textHeader
                 font.pixelSize: 15
                 font.bold:      true
             }
@@ -58,10 +58,10 @@ Rectangle {
                 label:          "+"
                 bold:           true
                 fontSize:       16
-                bgColor:        "#2a2060"
-                hoverColor:     "#3a30a0"
-                textColor:      "#818cf8"
-                borderColor:    "#4a40a0"
+                bgColor:        Constant.btnAdd.bg
+                hoverColor:     Constant.btnAdd.bgHov
+                textColor:      Constant.btnAdd.text
+                borderColor:    Constant.btnAdd.border
             }
         }
 
@@ -85,29 +85,29 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight:   36
-            color:            "#0e1020"
+            color:            Constant.bgDialog
 
             Rectangle {
                 anchors { top: parent.top; left: parent.left; right: parent.right }
                 height: 1
-                color:  "#2a2c4e"
+                color:  Constant.border
             }
 
             Row {
                 anchors.centerIn: parent
                 spacing: 6
 
-                Text { text: root.countTotal + " Devices"; color: "#7777aa"; font.pixelSize: 11 }
-                Text { text: "·"; color: "#333355"; font.pixelSize: 11 }
+                Text { text: root.countTotal + " Devices"; color: Constant.textLabel; font.pixelSize: 11 }
+                Text { text: "·"; color: Constant.statsDot; font.pixelSize: 11 }
                 Text {
                     text:           root.countAbnormal + " Abnormal"
-                    color:          root.countAbnormal > 0 ? "#cc3344" : "#444466"
+                    color:          root.countAbnormal > 0 ? Constant.anomaly : "#444466"
                     font.pixelSize: 11
                 }
-                Text { text: "·"; color: "#333355"; font.pixelSize: 11 }
+                Text { text: "·"; color: Constant.statsDot; font.pixelSize: 11 }
                 Text {
                     text:           root.countWarning + " Warning"
-                    color:          root.countWarning > 0 ? "#d89050" : "#444466"
+                    color:          root.countWarning > 0 ? Constant.warning : "#444466"
                     font.pixelSize: 11
                 }
             }
@@ -117,11 +117,11 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight:   36
-            color:            "#0e1020"
+            color:            Constant.bgDialog
 
             Rectangle {
                 anchors { top: parent.top; left: parent.left; right: parent.right }
-                height: 1; color: "#1e2040"
+                height: 1; color: Constant.dividerDark
             }
 
             Row {

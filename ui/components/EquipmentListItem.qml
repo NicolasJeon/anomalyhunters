@@ -20,7 +20,7 @@ Rectangle {
     readonly property bool   isRunning:     controlStatus === "Running"
 
     height: 72
-    color:  root.isSelected ? Constant.selectionBg : Constant.bgPanel
+    color:  root.isSelected ? Constant.selectionBg : Constant.bgDialog
 
     // ── selection bar ─────────────────────────────────────────────────────────
     Rectangle {
@@ -34,7 +34,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         width:  parent.width
         height: 1
-        color:  "#1e2035"
+        color:  Constant.divider
     }
 
     MouseArea { anchors.fill: parent; onClicked: root.selected() }
@@ -58,7 +58,7 @@ Rectangle {
             Rectangle {
                 anchors.fill: parent
                 radius: 6
-                color:  root.isRunning ? "#12182e" : "#0c0e18"
+                color:  root.isRunning ? Constant.bgThumb : Constant.bgThumbOff
 
                 Image {
                     anchors { fill: parent; margins: 3 }
@@ -78,7 +78,7 @@ Rectangle {
                     color:        root.isRunning
                                   ? Constant.healthColor(root.healthStatus)
                                   : Constant.stopped
-                    border.color: "#0c0e18"
+                    border.color: Constant.bgThumbOff
                     border.width: 1
                 }
             }
@@ -92,7 +92,7 @@ Rectangle {
 
             Text {
                 text:           root.equipmentData["name"] ?? ""
-                color:          root.isRunning ? "#d0d0ee" : "#555570"
+                color:          root.isRunning ? Constant.textInput : Constant.textStopped
                 font.pixelSize: 13
                 font.bold:      true
                 elide:          Text.ElideRight
@@ -102,7 +102,7 @@ Rectangle {
 
             Text {
                 text:           root.ip !== "" ? root.ip : "—"
-                color:          root.isRunning ? "#55557a" : "#333350"
+                color:          root.isRunning ? Constant.textIpOn : Constant.textIpOff
                 font.pixelSize: 11
                 font.bold:      true
                 elide:          Text.ElideRight
@@ -124,14 +124,14 @@ Rectangle {
             implicitWidth:  26
             implicitHeight: 26
             radius:         4
-            color:          deleteArea.containsMouse ? "#3a1010" : "transparent"
+            color:          deleteArea.containsMouse ? Constant.deleteBtn.hoverBg : "transparent"
             Layout.alignment: Qt.AlignVCenter
             Behavior on color { ColorAnimation { duration: 120 } }
 
             Text {
                 anchors.centerIn: parent
                 text:           "✕"
-                color:          deleteArea.containsMouse ? "#cc5555" : "#4a3040"
+                color:          deleteArea.containsMouse ? Constant.deleteBtn.hoverText : Constant.deleteBtn.text
                 font.pixelSize: 12
                 Behavior on color { ColorAnimation { duration: 120 } }
             }

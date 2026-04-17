@@ -45,8 +45,9 @@ ColumnLayout {
 
     // Header label
     Text {
-        text:           "History  (" + root.timeSeries.length + " samples)"
+        text:           "History"
         color:          Constant.textLabel
+        font.bold: true
         font.pixelSize: 13
     }
 
@@ -60,8 +61,8 @@ ColumnLayout {
         marginBottom:     0
 
         theme: GraphsTheme {
-            backgroundColor:           Constant.chartSlotBg
-            plotAreaBackgroundColor:   Constant.chartSlotBg
+            backgroundColor:           Constant.bgDetail
+            plotAreaBackgroundColor:   Constant.bgDetail
             plotAreaBackgroundVisible: true
             gridVisible:               false
             labelFont.pixelSize:       10

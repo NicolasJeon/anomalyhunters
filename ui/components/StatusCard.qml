@@ -19,19 +19,28 @@ Rectangle {
     // Animated display values
     property real _dispTemp:  0.0
     property real _dispPower: 0.0
+    property bool _animEnabled: false
 
-    Behavior on _dispTemp  { NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
-    Behavior on _dispPower { NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
+    Behavior on _dispTemp  { enabled: root._animEnabled; NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
+    Behavior on _dispPower { enabled: root._animEnabled; NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
 
     onTemperatureChanged: if (root.hasData) _dispTemp  = root.temperature
     onPowerChanged:       if (root.hasData) _dispPower = root.power
     onHasDataChanged: {
-        if (root.hasData) { _dispTemp = root.temperature; _dispPower = root.power }
-        else              { _dispTemp = 0;                _dispPower = 0 }
+        if (root.hasData) {
+            _animEnabled = false       // snap on first arrival
+            _dispTemp  = root.temperature
+            _dispPower = root.power
+            _animEnabled = true        // animate subsequent updates
+        } else {
+            _animEnabled = false
+            _dispTemp  = 0
+            _dispPower = 0
+        }
     }
 
     radius: 6
-    color: Constant.bgCard
+    color: Constant.bgDetail
 
     // Overall health color (based on finalState label)
     readonly property color _statusColor: {
@@ -101,6 +110,7 @@ Rectangle {
                 label:      "Temperature"
                 valueText:  root.hasData ? Constant.formatTemp(root._dispTemp) : "—"
                 valueColor: Constant.sensorTemp
+                iconColor:  Constant.sensorTemp
                 gaugeRatio: Math.min(root._dispTemp / Constant.gaugeTempMax, 1.0)
                 gaugeColor: root._tempStateColor
                 fs:         root._fs
@@ -112,6 +122,7 @@ Rectangle {
                 label:      "Power"
                 valueText:  root.hasData ? Constant.formatPower(root._dispPower) : "—"
                 valueColor: Constant.sensorPower
+                iconColor:  Constant.sensorPower
                 gaugeRatio: Math.min(root._dispPower / Constant.gaugePwrMax, 1.0)
                 gaugeColor: root._pwrStateColor
                 fs:         root._fs

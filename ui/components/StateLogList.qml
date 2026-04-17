@@ -16,6 +16,8 @@ ListView {
     property var    selectedLog:   null
     property int    fontSize:      0   // 0 = default; positive = add to base sizes
 
+    signal saveRequested(var logData)
+
     // re-track selected item by logId on log list update
     property var _trackLogId: undefined
 
@@ -39,7 +41,7 @@ ListView {
     model:   root.logs
 
     ScrollBar.vertical: ScrollBar {
-        policy: ScrollBar.AsNeeded
+        policy: ScrollBar.AlwaysOn
     }
 
     delegate: Rectangle {
@@ -60,17 +62,23 @@ ListView {
         }
         readonly property bool isSelected: root.selectedIndex === row.index
 
+        readonly property bool canSave: !row.fromDB && !(row.modelData["savedToDB"] === true)
+
         width:  ListView.view.width
-        height: 26 + root.fontSize
+        height: 32 + root.fontSize
         radius: 3
-        color:  row.isSelected ? Constant.selectionBg : Constant.logRowBg
-        border.color: {
-            if (row.isSelected)        return Constant.selectionBorder
-            if (row.hs === "Abnormal") return Constant.logRowAbnormal
-            if (row.hs === "Warning")  return Constant.logRowWarning
-            return "#1c2040"
+        color:  row.isSelected ? Constant.logRowSelected : Constant.logRowBg
+
+        Rectangle {
+            anchors { top: parent.top; left: parent.left; right: parent.right }
+            height: 1
+            color:  Constant.logRowBorder
         }
-        border.width: 1
+        Rectangle {
+            anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
+            height: 1
+            color:  Constant.logRowBorder
+        }
 
         MouseArea {
             anchors.fill: parent
@@ -85,7 +93,7 @@ ListView {
             anchors {
                 fill:        parent
                 leftMargin:  6
-                rightMargin: 6
+                rightMargin: 15
             }
             spacing: 5
 
@@ -95,17 +103,17 @@ ListView {
                       ? row.ev.toUpperCase()
                       : row.hs.toUpperCase()
                 color:                 row.stateColor
-                font.pixelSize:        11 + root.fontSize
+                font.pixelSize:        12 + root.fontSize
                 Layout.preferredWidth: 90
             }
 
             // ── sensor values ─────────────────────────────────────────────────
             Text {
-                text:            Constant.formatTemp(row.modelData["temperature"]  ?? 0)
-                               + "  " + Constant.formatPower(row.modelData["power"] ?? 0)
-                color:           row.stateColor
-                font.pixelSize:  10 + root.fontSize
-                font.family:     "Courier New"
+                text:             Constant.formatTemp(row.modelData["temperature"]  ?? 0)
+                                + "  " + Constant.formatPower(row.modelData["power"] ?? 0)
+                color:            Constant.logSensorText
+                font.pixelSize:   11 + root.fontSize
+                font.family:      "Courier New"
                 Layout.fillWidth: true
             }
 
@@ -118,6 +126,21 @@ ListView {
                 font.pixelSize:      10 + root.fontSize
                 horizontalAlignment: Text.AlignRight
                 Layout.alignment:    Qt.AlignRight
+            }
+
+            // ── save button ───────────────────────────────────────────────────
+            AppButton {
+                visible:        !row.fromDB
+                enabled:        row.canSave
+                implicitWidth:  52
+                implicitHeight: 20
+                label:          row.canSave ? "Save" : "Saved"
+                fontSize:       10
+                bgColor:        Constant.bgDialog
+                hoverColor:     Constant.bgDialog
+                textColor:      row.canSave ? Constant.primary.bg  : Constant.textMuted
+                borderColor:    row.canSave ? Constant.primary.bg  : Constant.border
+                onClicked:      root.saveRequested(row.modelData)
             }
         }
     }

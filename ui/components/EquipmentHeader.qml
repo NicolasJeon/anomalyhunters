@@ -28,14 +28,12 @@ RowLayout {
 
     // 편집 버튼 (이름 오른쪽)
     AppButton {
-        implicitWidth:    64
-        label:            "Edit"
-        bgColor:          Constant.bgPanel
-        hoverColor:       "#253050"
-        textColor:        "#6688bb"
-        hoverTextColor:   "#88aaff"
-        borderColor:      Constant.border
-        hoverBorderColor: Constant.focusAccent
+        implicitWidth: 64
+        label:         "Edit"
+        bgColor:       Constant.primary.bg
+        hoverColor:    Constant.primary.bgHov
+        textColor:     Constant.primary.text
+        borderColor:   Constant.primary.border
         onClicked: root.editRequested()
     }
 

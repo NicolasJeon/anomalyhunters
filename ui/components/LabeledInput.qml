@@ -19,30 +19,30 @@ ColumnLayout {
 
     Text {
         text:           root.label
-        color:          "#7777aa"
-        font.pixelSize: 11
+        color:          Constant.textHeader
+        font.pixelSize: 13
     }
 
     Rectangle {
         Layout.fillWidth: true
-        implicitHeight:   32
+        implicitHeight:   36
         radius:           4
-        color:            "#0e1020"
+        color:            Constant.bgPanel
         border.color:     input.activeFocus ? Constant.inputFocusBorder : Constant.border
 
         TextInput {
             id: input
             anchors { fill: parent; margins: 8 }
-            color:            "#d0d0ee"
-            font.pixelSize:   13
+            color:            Constant.textPrimary
+            font.pixelSize:   15
             inputMethodHints: root.inputHints
             Keys.onReturnPressed: root.returnPressed()
         }
         Text {
             anchors { fill: parent; margins: 8 }
             text:           root.placeholder
-            color:          "#444466"
-            font.pixelSize: 13
+            color:          Constant.textSecondary
+            font.pixelSize: 15
             visible:        input.text === ""
         }
     }

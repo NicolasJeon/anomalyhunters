@@ -18,14 +18,14 @@ Rectangle {
     property alias historyChart:    historyChart
     property alias stateLogPanel:   stateLogPanel
 
-    color: "#12141f"
+    color: Constant.bgDetail
 
     // no-selection placeholder
     Text {
         anchors.centerIn: parent
         visible:          root.selectedEquipmentId === ""
         text:             "← Select equipment"
-        color:            "#444466"
+        color:            Constant.textMuted
         font.pixelSize:   18
     }
 

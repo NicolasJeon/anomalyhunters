@@ -60,7 +60,7 @@ Window {
                     Layout.fillWidth: true
                     implicitHeight:   44
                     color:        Constant.bgPanel
-                    border.color: "#2a4a5a"
+                    border.color: Constant.inputBorder
                     radius:       4
                     TextInput {
                         anchors { fill: parent; margins: 6 }
@@ -99,7 +99,7 @@ Window {
                     Layout.fillWidth: true
                     implicitHeight:   44
                     color:        Constant.bgPanel
-                    border.color: "#2a3a5a"
+                    border.color: Constant.inputBorder
                     radius:       4
                     TextInput {
                         anchors { fill: parent; margins: 6 }
@@ -147,10 +147,10 @@ Window {
             AppButton {
                 Layout.fillWidth: true
                 label:       "Test Status"
-                bgColor:     "#0f2a18"
-                hoverColor:  "#1a4a2a"
-                textColor:   "#55ee88"
-                borderColor: "#338855"
+                bgColor:     Constant.run.bg
+                hoverColor:  Constant.run.bgHov
+                textColor:   Constant.run.text
+                borderColor: Constant.run.border
                 onClicked:   root._runInference()
             }
 
@@ -158,7 +158,7 @@ Window {
                 implicitWidth: 100
                 label:       "Close"
                 bgColor:     Constant.bgPanel
-                hoverColor:  "#1e2035"
+                hoverColor:  Constant.divider
                 textColor:   Constant.textSecondary
                 borderColor: Constant.border
                 onClicked:   root.visible = false

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtFacility
 
 // Start/Stop toggle switch
 Switch {
@@ -22,9 +23,9 @@ Switch {
         implicitWidth:  42
         implicitHeight: 24
         radius: height / 2
-        color:  root.checked ? "#818cf8" : "#1e2040"
+        color:  root.checked ? Constant.inputFocusBorder : Constant.dividerDark
         scale:  root.pressed ? 0.88 : 1.0
-        border.color: root.checked ? "transparent" : "#4a5080"
+        border.color: root.checked ? "transparent" : Constant.switchOffBorder
         border.width: 1
 
         Behavior on color        { ColorAnimation  { duration: 200 } }
@@ -35,7 +36,7 @@ Switch {
             width:  16; height: 16; radius: 8
             anchors.verticalCenter: parent.verticalCenter
             x:     root.checked ? parent.width - 19 : 3
-            color: root.checked ? "#ffffff" : "#4a4c6a"
+            color: root.checked ? Constant.white : Constant.switchKnobOff
 
             Behavior on x     { NumberAnimation { duration: 220; easing.type: Easing.OutBack; easing.overshoot: 0.4 } }
             Behavior on color { ColorAnimation  { duration: 200 } }
