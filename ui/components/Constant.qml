@@ -100,7 +100,7 @@ QtObject {
         if (!hasData)  return waiting
         if (val >= 50) return anomaly
         if (val >= 40) return warning
-        return normal
+        return sensorTemp
     }
     function pwrStateColor(val, hasData) {
         if (!hasData)  return waiting
