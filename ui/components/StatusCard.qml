@@ -40,7 +40,9 @@ Rectangle {
     }
 
     radius: 6
-    color: Constant.bgDetail
+    color:        Constant.bgDetail
+    border.color: Constant.border
+    border.width: 1
 
     // Overall health color (based on finalState label)
     readonly property color _statusColor: {
@@ -110,7 +112,7 @@ Rectangle {
                 label:      "Temperature"
                 valueText:  root.hasData ? Constant.formatTemp(root._dispTemp) : "—"
                 valueColor: Constant.sensorTemp
-                iconColor:  Constant.sensorTemp
+
                 gaugeRatio: Math.min(root._dispTemp / Constant.gaugeTempMax, 1.0)
                 gaugeColor: root._tempStateColor
                 fs:         root._fs
@@ -122,7 +124,7 @@ Rectangle {
                 label:      "Power"
                 valueText:  root.hasData ? Constant.formatPower(root._dispPower) : "—"
                 valueColor: Constant.sensorPower
-                iconColor:  Constant.sensorPower
+
                 gaugeRatio: Math.min(root._dispPower / Constant.gaugePwrMax, 1.0)
                 gaugeColor: root._pwrStateColor
                 fs:         root._fs

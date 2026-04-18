@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import QtFacility
-import Qt5Compat.GraphicalEffects
 
 // Sensor row: gauge bar + icon + label + value
 RowLayout {
@@ -11,7 +10,6 @@ RowLayout {
     property string label:      ""
     property string valueText:  "—"
     property color  valueColor: Constant.textLabel
-    property color  iconColor:  Constant.textLabel
     property real   gaugeRatio: 0.0   // 0.0 – 1.0, pre-clamped
     property color  gaugeColor: Constant.waiting
     property real   fs:         1.0   // font scale factor
@@ -44,10 +42,7 @@ RowLayout {
         RowLayout {
             spacing: 4
             Image {
-                id:     sensorIcon
                 source: root.iconSource
-                layer.enabled: true
-                layer.effect: ColorOverlay { color: root.iconColor }
             }
             Text {
                 text:           root.label
