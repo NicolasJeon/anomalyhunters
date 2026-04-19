@@ -1,14 +1,11 @@
 import QtQuick
 import "../components"
 
-// Master panel — placeholder
+// Master panel
 Rectangle {
     color: Constant.bgPanel
 
-    Text {
-        anchors.centerIn: parent
-        text:           "Master"
-        color:          Constant.textMuted
-        font.pixelSize: 14
+    EquipmentList {
+        anchors.fill: parent
     }
 }

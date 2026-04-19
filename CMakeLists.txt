@@ -35,6 +35,9 @@ qt_add_qml_module(appAnomalyHunters
         # components
         ui/components/Constant.qml
         ui/components/AppButton.qml
+        ui/components/ControlSwitch.qml
+        ui/components/EquipmentList.qml
+        ui/components/EquipmentDelegate.qml
 )
 
 set_target_properties(appAnomalyHunters PROPERTIES
