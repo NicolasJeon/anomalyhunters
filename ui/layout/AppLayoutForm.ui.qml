@@ -2,76 +2,48 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import "../components"
-import "../dialogs"
 
 // App layout — structure only
 Item {
     id: root
 
-    property alias masterLayout:    masterLayout
-    property alias detailLayout:    detailLayout
-    property alias equipmentDialog: equipmentDialog
-    property alias testModeBtn:     appHeader.testModeBtn
-    property alias testDialog:      testDialog
+    // ── Practice #1: Master-Detail UI layout ──────────────────────────────────
+    // Mission: ColumnLayout + SplitView로 Header / Master / Detail 영역 구성
+    // Hints:   ColumnLayout (QtQuick.Layouts)
+    //          SplitView    (QtQuick.Controls)
+    //
+    // ── Practice #2: Responsive layout ───────────────────────────────────────
+    // Mission: 창 크기에 따라 레이아웃이 반응하도록 설정
+    // Hints:   Layout.fillWidth / Layout.fillHeight
+    //
+    // ── Answer (먼저 직접 해보세요!) ──────────────────────────────────────────
+    // // ColumnLayout {
+    // //     anchors.fill: parent
+    // //     spacing:      0
+    // //
+    // //     HeaderLayout {               // Practice #1
+    // //         Layout.fillWidth: true   // Practice #2
+    // //     }
+    // //
+    // //     SplitView {                       // Practice #1
+    // //         Layout.fillWidth:  true       // Practice #2
+    // //         Layout.fillHeight: true       // Practice #2
+    // //         orientation:       Qt.Horizontal
+    // //
+    // //         MasterLayout {
+    // //             SplitView.preferredWidth: 260
+    // //             SplitView.minimumWidth:   200
+    // //             SplitView.maximumWidth:   420
+    // //         }
+    // //
+    // //         DetailLayout {
+    // //             SplitView.fillWidth:    true
+    // //             SplitView.minimumWidth: 560
+    // //         }
+    // //     }
+    // // }
 
-    // ── secondary OS window ───────────────────────────────────────────────────
-    // qmllint disable import
-    TestDataDialog { id: testDialog }
-    // qmllint enable import
-
-    ColumnLayout {
-        anchors.fill: parent
-        spacing: 0
-
-        // ── header ────────────────────────────────────────────────────────────
-        HeaderLayout {
-            id:               appHeader
-            Layout.fillWidth: true
-        }
-
-        // ── SplitView ─────────────────────────────────────────────────────────
-        SplitView {
-            Layout.fillWidth:  true
-            Layout.fillHeight: true
-            orientation:       Qt.Horizontal
-
-            // ── handle style ──────────────────────────────────────────────────
-            handle: Rectangle {
-                implicitWidth: 4
-                color: SplitHandle.pressed ? Constant.focusAccent
-                     : SplitHandle.hovered ? Constant.splitterHover
-                     : Constant.bgDialog
-
-                Rectangle {
-                    anchors.centerIn: parent
-                    width:  2
-                    height: 32
-                    radius: 1
-                    color: SplitHandle.hovered ? Constant.focusAccent : Constant.splitterDot
-                }
-            }
-
-            // ── master (left) ─────────────────────────────────────────────────
-            MasterLayout {
-                id:                       masterLayout
-                SplitView.preferredWidth: 260
-                SplitView.minimumWidth:   200
-                SplitView.maximumWidth:   420
-            }
-
-            // ── detail (right) ────────────────────────────────────────────────
-            DetailLayout {
-                id:                     detailLayout
-                SplitView.fillWidth:    true
-                SplitView.minimumWidth: 560
-            }
-        }
-    }
-
-    // ── equipment dialog overlay ──────────────────────────────────────────────
-    EquipmentDialog {
-        id:           equipmentDialog
-        anchors.fill: parent
-        z:            100
-    }
+    HeaderLayout  { id: appHeader    }
+    MasterLayout  { id: masterLayout }
+    DetailLayout  { id: detailLayout }
 }

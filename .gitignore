@@ -1,6 +1,8 @@
 build/
 CMakeLists.txt.user
 *.db
+.qmlls.ini
+.claude/
 onnx/equipment_anomaly_rf.onnx
 
 # onnxruntime 바이너리 (scripts/fetch_onnxruntime.sh 로 다운로드)

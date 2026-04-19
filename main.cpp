@@ -1,13 +1,9 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
-#include "backend/DatabaseManager.h"
-
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-
-    DatabaseManager::instance().init();
 
     QQmlApplicationEngine engine;
 
