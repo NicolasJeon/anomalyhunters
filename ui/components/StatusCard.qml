@@ -23,12 +23,14 @@ Rectangle {
     // ── Practice #9 Answer (먼저 직접 해보세요!) ──────────────────────────────
     // // Behavior on temperature {
     // //     NumberAnimation {
-    // //         duration: 600; easing.type: Easing.OutCubic
+    // //         duration: 600
+    // //         easing.type: Easing.OutCubic
     // //     }
     // // }
     // // Behavior on power {
     // //     NumberAnimation {
-    // //         duration: 600; easing.type: Easing.OutCubic
+    // //         duration: 600
+    // //         easing.type: Easing.OutCubic
     // //     }
     // // }
 

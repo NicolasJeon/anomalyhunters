@@ -29,17 +29,25 @@ ListView {
     // ── Practice #10 Answer (먼저 직접 해보세요!) ─────────────────────────────
     // // add: Transition {
     // //     NumberAnimation {
-    // //         property: "x"; from: -width; to: 0
-    // //         duration: 280; easing.type: Easing.OutCubic
+    // //         property: "x"
+    // //         from: -width; to: 0
+    // //         duration: 280
+    // //         easing.type: Easing.OutCubic
     // //     }
     // // }
     // // remove: Transition {
     // //     NumberAnimation {
-    // //         property: "x"; to: -width
-    // //         duration: 250; easing.type: Easing.InCubic
+    // //         property: "x"
+    // //         to: -width
+    // //         duration: 250
+    // //         easing.type: Easing.InCubic
     // //     }
     // // }
     // // removeDisplaced: Transition {
-    // //     NumberAnimation { property: "y"; duration: 220; easing.type: Easing.OutCubic }
+    // //     NumberAnimation {
+    // //         property: "y"
+    // //         duration: 220
+    // //         easing.type: Easing.OutCubic
+    // //     }
     // // }
 }
