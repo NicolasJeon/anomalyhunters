@@ -23,18 +23,13 @@ Rectangle {
             }
         }
 
-        // ── Practice #4: Delegate 데이터 바인딩 ──────────────────────────────
-        // Mission: model 데이터를 각 항목에 연결하세요
-        // Hints:   ListView는 delegate마다 model을 자동으로 주입합니다
-        //          model.name / model.ip → 아래 Text에 연결하세요
-        //          model.running → ControlSwitch의 isRunning에 연결하세요
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 2
 
             Text {
                 id:             nameText
-                text:           "" // TODO: model.name
+                text:           model.name
                 color:          Constant.textPrimary
                 font.pixelSize: 13
                 font.bold:      true
@@ -42,13 +37,14 @@ Rectangle {
 
             Text {
                 id:             ipText
-                text:           "" // TODO: model.ip
+                text:           model.ip
                 color:          Constant.textSecondary
                 font.pixelSize: 11
             }
         }
+
         ControlSwitch {
-            isRunning: false // TODO: model.running
+            isRunning: model.running
         }
 
         Text {
@@ -59,7 +55,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 cursorShape:  Qt.PointingHandCursor
-                onClicked:    {} // step3에서 구현
+                onClicked:    {} // step4에서 구현
             }
         }
     }

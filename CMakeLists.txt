@@ -22,6 +22,12 @@ set_source_files_properties(ui/components/Constant.qml
 qt_add_qml_module(appAnomalyHunters
     URI QtFacility
     VERSION 1.0
+    SOURCES
+        backend/Equipment.h
+        backend/EquipmentListModel.h
+        backend/EquipmentListModel.cpp
+        backend/EquipmentManager.h
+        backend/EquipmentManager.cpp
     QML_FILES
         ui/Main.qml
         # layout
@@ -46,6 +52,7 @@ set_target_properties(appAnomalyHunters PROPERTIES
 
 target_include_directories(appAnomalyHunters PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/backend
 )
 
 target_link_libraries(appAnomalyHunters
