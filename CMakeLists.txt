@@ -44,6 +44,22 @@ qt_add_qml_module(appAnomalyHunters
         ui/components/ControlSwitch.qml
         ui/components/EquipmentList.qml
         ui/components/EquipmentDelegate.qml
+        ui/components/StatusCard.qml
+        ui/components/ImageCard.qml
+        ui/components/SensorRow.qml
+)
+
+qt_add_resources(appAnomalyHunters "app_images"
+    PREFIX "/images"
+    BASE   "images"
+    FILES
+        images/air_circulator.png
+        images/temp_controller.png
+        images/pump.png
+        images/generator.png
+        images/default.png
+        images/temperature_icon.svg
+        images/power_icon.svg
 )
 
 set_target_properties(appAnomalyHunters PROPERTIES

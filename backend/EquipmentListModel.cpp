@@ -10,41 +10,26 @@ int EquipmentListModel::rowCount(const QModelIndex&) const
 
 QVariant EquipmentListModel::data(const QModelIndex& index, int role) const
 {
-    // ── Practice #5: C++ 모델 구현 ────────────────────────────────────────────────
-    // Mission: Move equipment ListModel to C++ backend
-    // Hints:   data() virtual 함수를 구현하세요
-
     if (!index.isValid() || index.row() >= items_.size()) return {};
     const auto& eq = items_.at(index.row());
     switch (role) {
-    // TODO: role에 맞는 eq의 값을 반환하세요
-
-
-
-    
-    // ── Practice #5 Answer ───────────────────────────────────────────────────
-    // // case NameRole:    return eq.name;
-    // // case IpRole:      return eq.ip;
-    // // case RunningRole: return eq.running;
+    case IdRole:          return eq.id;
+    case NameRole:        return eq.name;
+    case IpRole:          return eq.ip;
+    case ImageSourceRole: return eq.imageSource;
+    case RunningRole:     return eq.running;
     }
     return {};
 }
 
 QHash<int, QByteArray> EquipmentListModel::roleNames() const
 {
-    // ── Practice #5: C++ 모델 구현 ────────────────────────────────────────────────
-    // Mission: Move equipment ListModel to C++ backend
-    // Hints:   roleNames() virtual 함수를 구현하세요
-
     return {
-    // TODO: QML에서 사용할 role 이름을 등록하세요 (name, ip, running)
-
-
-
-    // ── Practice #5 Answer ───────────────────────────────────────────────────
-    // // { NameRole,    "name"    },
-    // // { IpRole,      "ip"      },
-    // // { RunningRole, "running" },
+        { IdRole,          "id"          },
+        { NameRole,        "name"        },
+        { IpRole,          "ip"          },
+        { ImageSourceRole, "imageSource" },
+        { RunningRole,     "running"     },
     };
 }
 
@@ -53,4 +38,28 @@ void EquipmentListModel::append(const Equipment& eq)
     beginInsertRows({}, items_.size(), items_.size());
     items_.append(eq);
     endInsertRows();
+}
+
+Equipment EquipmentListModel::find(const QString& id) const
+{
+    for (const auto& eq : items_)
+        if (eq.id == id) return eq;
+    return {};
+}
+
+QString EquipmentListModel::find_first_id() const
+{
+    return items_.isEmpty() ? QString{} : items_.first().id;
+}
+
+void EquipmentListModel::remove(const QString& id)
+{
+    for (int i = 0; i < items_.size(); ++i) {
+        if (items_[i].id == id) {
+            beginRemoveRows({}, i, i);
+            items_.removeAt(i);
+            endRemoveRows();
+            return;
+        }
+    }
 }

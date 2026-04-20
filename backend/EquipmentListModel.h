@@ -19,7 +19,7 @@ class EquipmentListModel : public QAbstractListModel
     QML_ELEMENT
 
 public:
-    enum Roles { NameRole = Qt::UserRole, IpRole, RunningRole };
+    enum Roles { IdRole = Qt::UserRole, NameRole, IpRole, ImageSourceRole, RunningRole };
 
     explicit EquipmentListModel(QObject* parent = nullptr);
 
@@ -27,7 +27,10 @@ public:
     QVariant data(const QModelIndex& index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    void append(const Equipment& eq);
+    void      append(const Equipment& eq);
+    void      remove(const QString& id);
+    Equipment find(const QString& id) const;
+    QString   find_first_id() const;
 
 private:
     QList<Equipment> items_;

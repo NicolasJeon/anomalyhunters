@@ -46,8 +46,8 @@ QtObject {
 
     // Chart / gauge
     readonly property color gaugeBg:     "#0e1020"
-    readonly property real  gaugeTempMax: 60.0
-    readonly property real  gaugePwrMax: 100.0
+    readonly property real  gaugeTempMax: 70.0
+    readonly property real  gaugePwrMax: 120.0
 
     // Selection / focus
     readonly property color selectionBg:     "#1e2a46"

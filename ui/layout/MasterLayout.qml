@@ -1,5 +1,6 @@
 import QtQuick
 
+// qmllint disable unqualified missing-property
 MasterLayoutForm {
-    id: root
+    onAddRequested: EquipmentManager.addEquipment()
 }
