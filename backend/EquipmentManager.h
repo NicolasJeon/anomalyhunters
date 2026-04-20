@@ -11,7 +11,7 @@
 class EquipmentManager : public QObject
 {
     Q_OBJECT
-    // TODO : EquipmentManager를 QML에 Single으로 노출
+    // TODO : EquipmentManager를 QML에 Singleton으로 노출
     // TODO : equipmentListModel 멤버를 Q_PROPERTY로 노출
 
 
