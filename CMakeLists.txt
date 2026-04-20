@@ -5,7 +5,7 @@ project(QtFacility VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2)
+find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2 Graphs)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -26,6 +26,8 @@ qt_add_qml_module(appAnomalyHunters
         backend/Equipment.h
         backend/EquipmentListModel.h
         backend/EquipmentListModel.cpp
+        backend/DeviceTimeSeriesSimulator.h
+        backend/DeviceTimeSeriesSimulator.cpp
         backend/EquipmentManager.h
         backend/EquipmentManager.cpp
     QML_FILES
@@ -47,6 +49,7 @@ qt_add_qml_module(appAnomalyHunters
         ui/components/StatusCard.qml
         ui/components/ImageCard.qml
         ui/components/SensorRow.qml
+        ui/components/HistoryChart.qml
 )
 
 qt_add_resources(appAnomalyHunters "app_images"
@@ -74,6 +77,7 @@ target_include_directories(appAnomalyHunters PRIVATE
 target_link_libraries(appAnomalyHunters
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
+    PRIVATE Qt6::Graphs
 )
 
 include(GNUInstallDirs)

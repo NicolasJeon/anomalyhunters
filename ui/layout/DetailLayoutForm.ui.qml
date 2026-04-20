@@ -56,21 +56,12 @@ Rectangle {
             }
         }
 
-        // ③ placeholder (step5: 그래프/로그 영역)
-        Rectangle {
-            Layout.fillWidth:  true
-            Layout.fillHeight: true
-            color:             Constant.bgDetail
-            radius:            8
-            border.color:      Constant.border
-            border.width:      1
-
-            Text {
-                anchors.centerIn: parent
-                text:             "Graph / Log — step 5"
-                color:            Constant.textMuted
-                font.pixelSize:   13
-            }
+        // ③ history chart
+        HistoryChart {
+            Layout.fillWidth:       true
+            Layout.preferredHeight: 200
+            timeSeries:  EquipmentManager.selectedTimeSeries
+            equipmentId: root.selId
         }
     }
 }

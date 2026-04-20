@@ -1,5 +1,5 @@
 #include "EquipmentManager.h"
-#include <QRandomGenerator>
+#include <QDateTime>
 
 EquipmentManager::EquipmentManager(QObject* parent)
     : QObject(parent)
@@ -29,7 +29,10 @@ void EquipmentManager::setSelectedEquipmentId(const QString& id)
 
     temperature_ = 0.0;
     power_       = 0.0;
+    timeSeries_.clear();
+    simulator_.reset();
     emit sensorDataChanged();
+    emit selectedTimeSeriesChanged();
 
     sensorTimer_.start();
 
@@ -38,9 +41,20 @@ void EquipmentManager::setSelectedEquipmentId(const QString& id)
 
 void EquipmentManager::updateSensorData()
 {
-    temperature_ = QRandomGenerator::global()->bounded(70.0);
-    power_       = QRandomGenerator::global()->bounded(120.0);
+    const auto sample = simulator_.next();
+    temperature_ = sample.temperature;
+    power_       = sample.power;
+
+    QVariantMap point;
+    point["timestampMs"]  = QDateTime::currentMSecsSinceEpoch();
+    point["temperature"]  = temperature_;
+    point["power"]        = power_;
+    timeSeries_.append(point);
+    if (timeSeries_.size() > MAX_SERIES)
+        timeSeries_.removeFirst();
+
     emit sensorDataChanged();
+    emit selectedTimeSeriesChanged();
 }
 
 void EquipmentManager::addEquipment()

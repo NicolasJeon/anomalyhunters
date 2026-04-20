@@ -93,9 +93,9 @@ Rectangle {
                 Layout.fillWidth: true
                 iconSource: "qrc:/images/temperature_icon.svg"
                 label:      "Temperature"
-                valueText:  "—"   // TODO: Math.round(???) + " C"
+                valueText:  Math.round(root.temperature) + " C"
                 valueColor: Constant.sensorTemp
-                gaugeRatio: 0     // TODO: Math.min(??? / Constant.gaugeTempMax, 1.0)
+                gaugeRatio: Math.min(root.temperature / Constant.gaugeTempMax, 1.0)
                 gaugeColor: root._tempStateColor
                 fs:         root._fs
 
@@ -108,9 +108,9 @@ Rectangle {
                 Layout.fillWidth: true
                 iconSource: "qrc:/images/power_icon.svg"
                 label:      "Power"
-                valueText:  "—"   // TODO: Math.round(???) + " W"
+                valueText:  Math.round(root.power) + " W"
                 valueColor: Constant.sensorPower
-                gaugeRatio: 0     // TODO: Math.min(??? / Constant.gaugePwrMax, 1.0)
+                gaugeRatio: Math.min(root.power / Constant.gaugePwrMax, 1.0)
                 gaugeColor: root._pwrStateColor
                 fs:         root._fs
 

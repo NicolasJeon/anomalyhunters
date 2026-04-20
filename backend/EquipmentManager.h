@@ -1,8 +1,10 @@
 #pragma once
 #include <QObject>
 #include <QTimer>
+#include <QVariantList>
 #include <QVariantMap>
 #include <QtQml/qqmlregistration.h>
+#include "DeviceTimeSeriesSimulator.h"
 #include "EquipmentListModel.h"
 
 class EquipmentManager : public QObject
@@ -27,6 +29,9 @@ class EquipmentManager : public QObject
     Q_PROPERTY(qreal selectedPower
                READ selectedPower NOTIFY sensorDataChanged)
 
+    Q_PROPERTY(QVariantList selectedTimeSeries
+               READ selectedTimeSeries NOTIFY selectedTimeSeriesChanged)
+
 public:
     explicit EquipmentManager(QObject* parent = nullptr);
 
@@ -36,6 +41,7 @@ public:
     QVariantMap selectedEquipment()    const;
     qreal       selectedTemperature()  const { return temperature_; }
     qreal       selectedPower()        const { return power_; }
+    QVariantList selectedTimeSeries()  const { return timeSeries_; }
 
     void setSelectedEquipmentId(const QString& id);
 
@@ -45,14 +51,19 @@ public:
 signals:
     void selectedEquipmentChanged();
     void sensorDataChanged();
+    void selectedTimeSeriesChanged();
 
 private:
     void updateSensorData();
 
-    EquipmentListModel model_;
-    QString            selectedId_;
-    int                nextId_ = 1;
-    qreal              temperature_ = 0.0;
-    qreal              power_       = 0.0;
-    QTimer             sensorTimer_;
+    static constexpr int MAX_SERIES = 30;
+
+    EquipmentListModel       model_;
+    DeviceTimeSeriesSimulator simulator_;
+    QString                  selectedId_;
+    int                      nextId_ = 1;
+    qreal                    temperature_ = 0.0;
+    qreal                    power_       = 0.0;
+    QVariantList             timeSeries_;
+    QTimer                   sensorTimer_;
 };
