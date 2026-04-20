@@ -22,10 +22,14 @@ Rectangle {
 
     // ── Practice #9 Answer (먼저 직접 해보세요!) ──────────────────────────────
     // // Behavior on temperature {
-    // //     NumberAnimation { duration: 600; easing.type: Easing.OutCubic }
+    // //     NumberAnimation {
+    // //         duration: 600; easing.type: Easing.OutCubic
+    // //     }
     // // }
     // // Behavior on power {
-    // //     NumberAnimation { duration: 600; easing.type: Easing.OutCubic }
+    // //     NumberAnimation {
+    // //         duration: 600; easing.type: Easing.OutCubic
+    // //     }
     // // }
 
     readonly property real _fs: Math.max(0.55, Math.min(1.4, root.width / 450))
